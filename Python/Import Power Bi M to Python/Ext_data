@@ -1,0 +1,104 @@
+
+try:
+    # 1. Realizar la solicitud HTTP GET
+    response = requests.get(URL_API, headers={"Accept": "application/json"})
+    response.raise_for_status()
+    
+    # 2. Obtener los datos JSON
+    data_json = response.json()
+    
+except requests.exceptions.RequestException as e:
+    # Manejo de errores: crea un DataFrame vacío en caso de fallo
+    df_final = pd.DataFrame()
+    print(f"Error al conectar con la API: {e}")
+    # Imprime el DataFrame vacío y sale
+    print(df_final) 
+    exit() 
+
+# 3. Determinar la lista de registros a normalizar
+# Se accede a la lista de datos, asumiendo que es la raíz o está en la clave 'result'.
+registros = data_json.get('result', data_json) if isinstance(data_json, dict) else data_json
+
+# 4. Aplanamiento completo del JSON en una sola pasada
+# Esto genera columnas como 'GENERAL_SEGMENTO', 'VENTAS 360_metricA', etc.
+df_plano = json_normalize(
+    registros,
+    sep='_',
+    errors='ignore' 
+)
+
+# 5. DETECCIÓN AUTOMÁTICA DE COLUMNAS ID (VARIABLES BASE) Y MÉTRICAS
+
+# Identificar todas las columnas que contienen nombres de reportes (Métricas)
+metricas_360 = [
+    col for col in df_plano.columns 
+    if any(reporte in col for reporte in COLUMNAS_REPORTE)
+]
+
+# Identificar las columnas ID (Variables Base):
+# Son todas las columnas *excepto* las que identificamos como métricas, y excluimos 'GENERAL'.
+id_vars = [
+    col for col in df_plano.columns 
+    if col not in metricas_360 and col != 'GENERAL'
+]
+
+
+# 6. Anulación de Dinamización (Unpivot)
+
+df_unpivot = pd.melt(
+    df_plano,
+    id_vars=id_vars, # Columnas ID detectadas
+    value_vars=metricas_360,
+    var_name="Concepto_Reporte_Compuesto",
+    value_name="Valor"
+).dropna(subset=['Valor'])
+
+
+# 7. Separar el Nombre del Reporte del Concepto
+def split_concepto_reporte(row):
+    concepto_completo = row['Concepto_Reporte_Compuesto']
+    
+    for r in COLUMNAS_REPORTE:
+        if concepto_completo.startswith(r + '_'):
+            row['Reporte'] = r
+            row['Concepto_Reporte'] = concepto_completo.replace(r + '_', '')
+            return row
+            
+    row['Reporte'] = 'OTROS'
+    row['Concepto_Reporte'] = concepto_completo
+    return row
+
+df_final = df_unpivot.apply(split_concepto_reporte, axis=1)
+
+
+# 8. Pasos finales de limpieza y formato
+
+# Renombrar columnas: quitamos el prefijo 'GENERAL_' y renombramos 'date'
+def rename_column(name):
+    if name.startswith('GENERAL_'):
+        return name.replace('GENERAL_', '') # Deja solo 'SEGMENTO'
+    return name
+    
+df_final = df_final.rename(columns=lambda x: rename_column(x))
+df_final = df_final.rename(columns={"date": "Fecha"})
+
+
+# 9. Filtrar y tipar datos
+df_final = df_final[~df_final['planta'].isin(FILTROS_PLANTA)]
+
+df_final['Fecha'] = pd.to_datetime(df_final['Fecha'], errors='coerce').dt.date
+df_final['Valor'] = pd.to_numeric(df_final['Valor'], errors='coerce')
+df_final = df_final[df_final['Valor'].notna()]
+
+# Quitar columna temporal y asegurar el orden
+df_final = df_final.drop(columns=['Concepto_Reporte_Compuesto'])
+
+# Aseguramos el orden final de las columnas
+columnas_finales = ['Fecha', 'planta', 'SEGMENTO', 'Reporte', 'Concepto_Reporte', 'Valor']
+df_final = df_final[[col for col in columnas_finales if col in df_final.columns]]
+
+
+# 10. MOSTRAR RESULTADO COMPLETO
+
+# Esta es la línea que asegura que Power BI cargue la totalidad del DataFrame.
+print(df_final)

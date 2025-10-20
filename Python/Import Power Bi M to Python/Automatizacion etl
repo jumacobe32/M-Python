@@ -1,0 +1,84 @@
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+# ==============================================================================
+# ⚠️ CONFIGURACIÓN CLAVE: RUTA AL SCRIPT ETL
+#
+# USAMOS UNA CADENA DE RUTA CRUDA (raw string, con 'r') para evitar problemas
+# con espacios y barras invertidas en Windows.
+# ==============================================================================
+
+# 1. Define la ruta COMPLETA al archivo etl_processor.py como una CADENA LITERAL.
+# Asegúrate de que el nombre del archivo es exactamente 'etl_processor.py'
+# y que existe en esa ubicación.
+SCRIPT_A_EJECUTAR_STR = r"C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\Ext_data_test.py"
+
+# 2. Convertimos a objeto Path SOLAMENTE para la verificación de existencia.
+SCRIPT_A_EJECUTAR_PATH = Path(SCRIPT_A_EJECUTAR_STR)
+
+# Usamos el intérprete de Python que se está ejecutando actualmente.
+PYTHON_EXECUTABLE = sys.executable 
+
+def ejecutar_proceso_etl(script_path_str: str, script_path_obj: Path):
+    """
+    Ejecuta el script ETL de Pandas como un proceso secundario,
+    usando la ruta literal (string) para mayor compatibilidad.
+    """
+    print("=" * 70)
+    print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] INICIANDO ORQUESTACIÓN ETL...")
+    print(f"Buscando script en: {script_path_str}")
+    print(f"Intérprete Python: {PYTHON_EXECUTABLE}")
+    print("=" * 70)
+
+    # 1. Verificación de existencia (Pre-check)
+    if not script_path_obj.exists():
+        print(f"!!! ERROR FATAL: No se encontró el script ETL en la ruta: {script_path_str}")
+        print("!!! VERIFIQUE EL NOMBRE DEL ARCHIVO Y LA RUTA EXACTA !!!")
+        sys.exit(1)
+        
+    try:
+        # 2. Ejecución. Ponemos la ruta completa del script como un único argumento string
+        # en la lista de comandos.
+        resultado = subprocess.run(
+            [PYTHON_EXECUTABLE, script_path_str],
+            check=True,
+            capture_output=True,
+            text=True,
+            encoding='utf-8'
+        )
+        
+        # ... (Resto del manejo de salida exitosa) ...
+        print("\n--- SALIDA DEL PROCESADOR ETL (stdout) ---")
+        print(resultado.stdout)
+        print("------------------------------------------\n")
+        print(f"✅ ¡PROCESO ETL COMPLETO EXITOSAMENTE!")
+
+    except subprocess.CalledProcessError as e:
+        # 4. Manejo de fallos del script ETL
+        print("\n" + "!" * 70)
+        print(f"!!! ERROR CRÍTICO DETECTADO en la ejecución de {script_path_obj.name} !!!")
+        print(f"CÓDIGO DE RETORNO (Fallo del ETL): {e.returncode}")
+        print("--- Error STDERR (Causa del fallo) ---")
+        print(e.stderr) 
+        print("!" * 70)
+        sys.exit(f"Fallo ETL: Proceso detenido debido a un error en el script de procesamiento.")
+    except Exception as e:
+        print(f"ERROR INESPERADO en el orquestador: {e}")
+        sys.exit(1)
+
+def main():
+    """Función principal del orquestador."""
+    inicio_total = time.time()
+    
+    ejecutar_proceso_etl(SCRIPT_A_EJECUTAR_STR, SCRIPT_A_EJECUTAR_PATH)
+    
+    duracion = time.time() - inicio_total
+    
+    print("\n========================================================")
+    print(f"DURACIÓN TOTAL DEL PROCESO DE ORQUESTACIÓN: {duracion:.2f} segundos.")
+    print("========================================================")
+
+if __name__ == "__main__":
+    main()

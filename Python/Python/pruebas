@@ -1,0 +1,29 @@
+import pandas as pd
+import requests
+from datetime import datetime, timedelta
+
+
+df_hist=datohistoricos
+df_hist['fecha'] = pd.to_datetime(df_hist['fecha'])
+
+if df_hist.empty:
+    fecha_inicio =df_hist['fecha'].max()
+
+url_base='https://kpis.grupo-ortiz.site/Controllers/apiController.php?op=api'
+params={
+    "desde":fecha_inicio.isoformat()
+}
+
+response = requests.get(url_base,params=params)
+if response.status_code == 200:
+    nuevos = pd.DataFrame(response.json())
+    nuevos['fecha'] = pd.to_datetime(nuevos['fecha'])
+
+    # --- 5. Filtrar solo datos más nuevos (por si API trae repetidos)
+    nuevos_filtrados = nuevos[nuevos['fecha'] > fecha_inicio]
+
+    # --- 6. Unir histórico + nuevos
+    df_final = pd.concat([df_hist, nuevos_filtrados], ignore_index=True)
+else:
+    # Si falla, simplemente devuelve el histórico sin nuevos datos
+    df_final = df_hist

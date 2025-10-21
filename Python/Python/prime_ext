@@ -1,0 +1,41 @@
+import pandas as pd
+import requests
+import json
+from typing import List
+
+API_URL = 'https://kpis.grupo-ortiz.site/Controllers/apiController.php?op=api'
+HEADERS={'Accept':'application/json'}
+
+# Inicializamos 'respuesta' como None antes del bloque try
+respuesta = None 
+
+try:
+    # 1. Realizar la solicitud GET
+    respuesta = requests.get(API_URL) 
+    
+    # 2. Verificar el código de estado HTTP.
+    respuesta.raise_for_status()
+    
+    print("La consulta es exitosa")
+    
+    # 3. Extraer y mostrar los datos JSON.
+    datos_json = respuesta.json()
+    print("\n📦 Datos recibidos (Primeros elementos):")
+    print(json.dumps(datos_json, indent=4))
+
+
+except requests.exceptions.HTTPError as err_http:
+    # Captura errores HTTP específicos (ej. 404, 401)
+    print(f"\n❌ Error HTTP al conectar: {err_http}")
+
+except requests.exceptions.RequestException as err:
+    # Captura errores de conexión o DNS (ej. la URL no existe o problemas de red)
+    print(f"\n❌ Error de Conexión (Red): {err}")
+    
+except json.JSONDecodeError:
+    # Captura si la respuesta existe, pero no es JSON válido
+    print("\n❌ Error de Formato: La respuesta no pudo ser decodificada como JSON.")
+    if respuesta is not None:
+
+
+       print(f"   Respuesta cruda: {respuesta.text[:10]}...")

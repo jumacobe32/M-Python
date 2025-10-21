@@ -1,0 +1,175 @@
+import pandas as pd
+import requests
+import json
+from typing import Dict, Any, Optional
+from pathlib import Path 
+
+# --- CONFIGURACIÓN ---
+API_URL = "https://kpis.grupo-ortiz.site/Controllers/apiController.php?op=api"
+HEADERS = {'Accept': 'application/json'}
+TIEMPO_MAXIMO_ESPERA = 60  # Añadido: Límite de 60 segundos para la API
+ID_VARS = ["date", "planta", "SEGMENTO"] 
+REPORTE_COLS = ["VENTAS 360", "PRODUCCION 360", "INVENTARIOS 360", "DESEMPEÑO 360"]
+
+# ... (Las funciones auxiliares: safe_to_dict, find_report_column_name se mantienen iguales) ...
+
+# ----------------------------------------------------------------------------------
+# --- FUNCIÓN DE EXTRACCIÓN CON CONTROL DE TIMEOUT ---
+# ----------------------------------------------------------------------------------
+
+def extraer_datos_api(url: str, headers: Dict[str, str]) -> pd.DataFrame:
+    """
+    Extrae datos, aplana la respuesta JSON y maneja errores de red/timeout.
+    """
+    try:
+        # 1. Llamada a la API con TIMEOUT
+        respuesta = requests.get(url, headers=headers, timeout=TIEMPO_MAXIMO_ESPERA)
+        respuesta.raise_for_status() # Lanza HTTPError si 4xx o 5xx
+        
+        datos_json = respuesta.json()
+
+        if not isinstance(datos_json, dict):
+            print("Fallo: La respuesta JSON no es un diccionario.")
+            return pd.DataFrame()
+            
+        # 2. Aplanamiento inicial (lógica de búsqueda de la lista de registros)
+        # (Esta lógica se mantiene igual que en tu script original)
+        list_data = None
+        for key, value in datos_json.items():
+            if isinstance(value, list) and value:
+                list_data = value
+                break
+        
+        if not list_data:
+            print("Fallo: No se encontró la lista de registros anidada o está vacía.")
+            return pd.DataFrame() 
+
+        # 3. Aplanamiento y Renombrado
+        df_base = pd.json_normalize(list_data, sep='.')
+        col_map = {}
+        for col in df_base.columns:
+            if col.startswith('GENERAL.'):
+                col_map[col] = col.split('.')[-1]
+        
+        if col_map:
+            df_base.rename(columns=col_map, inplace=True)
+            
+        # 4. Verificación de Reportes
+        report_cols_present = [col for col in REPORTE_COLS if any(c.startswith(f"{col}.") for c in df_base.columns)]
+        if not report_cols_present:
+            print("ERROR CRÍTICO: No se encontraron prefijos de las columnas de reporte.")
+            return pd.DataFrame()
+
+        return df_base
+
+    except requests.exceptions.Timeout:
+        print(f"!!! ERROR: El tiempo de espera ({TIEMPO_MAXIMO_ESPERA}s) para la API ha sido excedido.")
+        return pd.DataFrame() 
+    except requests.exceptions.RequestException as e:
+        print(f"!!! ERROR CRÍTICO de Conexión/HTTP con la API: {e}")
+        return pd.DataFrame() 
+    except Exception as e:
+        print(f" Ocurrió un error inesperado durante la extracción: {e}")
+        return pd.DataFrame()
+
+# ----------------------------------------------------------------------------------
+# --- FUNCIÓN DE EXPANSIÓN DE REPORTES (Se mantiene igual) ---
+# ----------------------------------------------------------------------------------
+# ... (Tu función 'expandir_y_unificar_reporte' se mantiene igual aquí) ...
+def expandir_y_unificar_reporte(
+    df_base: pd.DataFrame, 
+    columna_expandir: str, 
+    nombre_reporte: str, 
+    columnas_a_quitar: list 
+) -> pd.DataFrame:
+    # ... (El cuerpo de tu función expandir_y_unificar_reporte debe ir aquí) ...
+    
+    prefix = f"{columna_expandir}."
+    report_data_cols = [col for col in df_base.columns if col.startswith(prefix)]
+
+    if not report_data_cols:
+        return pd.DataFrame()
+
+    id_cols_present = [col for col in ID_VARS if col in df_base.columns]
+    
+    df_expand = df_base[id_cols_present + report_data_cols].copy()
+    
+    new_report_data_cols = [col.replace(prefix, '') for col in report_data_cols]
+    col_map = dict(zip(report_data_cols, new_report_data_cols))
+    df_expand.rename(columns=col_map, inplace=True)
+    
+    unpivot_id_vars = id_cols_present
+    value_vars = new_report_data_cols 
+    
+    df_unpivot = df_expand.melt(
+        id_vars=unpivot_id_vars, 
+        value_vars=value_vars, 
+        var_name="Concepto_Reporte", 
+        value_name="Valor" 
+    ).dropna(subset=['Valor'])
+    
+    df_unpivot['Reporte'] = nombre_reporte
+    
+    df_unpivot = df_unpivot.dropna(subset=id_cols_present, how='all')
+
+    return df_unpivot
+
+
+# ----------------------------------------------------------------------------------
+# --- EJECUCIÓN DEL FLUJO ETL COMPLETO ---
+# ----------------------------------------------------------------------------------
+
+if __name__ == '__main__':
+    
+    # 1. Extracción
+    df_base = extraer_datos_api(API_URL, HEADERS)
+    
+    if df_base.empty:
+        # Detenemos el script. Esto hace que main_orchestrator.py falle.
+        sys.exit(1) 
+    
+    # 2. Transformación (Unpivot y Combinación)
+    reportes_config = [
+        ("DESEMPEÑO 360", "Desempeño 360", []),
+        ("VENTAS 360", "Ventas 360", []),
+        ("PRODUCCION 360", "Produccion 360", []),
+        ("INVENTARIOS 360", "Inventarios 360", []),
+    ]
+    lista_tablas = []
+    for col_expandir, nom_reporte, _ in reportes_config:
+        df_reporte = expandir_y_unificar_reporte(df_base, col_expandir, nom_reporte, [])
+        if not df_reporte.empty:
+            lista_tablas.append(df_reporte)
+    
+    if not lista_tablas:
+        print("Ningún reporte pudo ser generado.")
+        sys.exit(1) # Detiene el orquestador
+        
+    df_final = pd.concat(lista_tablas, ignore_index=True)
+    
+    # 3. Limpieza Final (Renombrado, Filtros y Tipos)
+    df_final.rename(columns={'date': 'Fecha'}, inplace=True)
+    plantas_a_excluir = ["BRUCKNER", "DESCONOCIDO", "RECICLADORA"]
+    df_final = df_final[~df_final['planta'].isin(plantas_a_excluir)].copy()
+    
+    df_final['Valor'] = pd.to_numeric(df_final['Valor'], errors='coerce')
+    df_final['Fecha'] = pd.to_datetime(df_final['Fecha'], errors='coerce')
+    df_final = df_final.astype({
+        "planta": 'str',
+        "SEGMENTO": 'str',
+        "Reporte": 'str',
+        "Concepto_Reporte": 'str'
+    }, errors='ignore')
+
+    # 4. EXPORTACIÓN
+    output_filename = 'Ext_Datos.csv'
+    output_path = Path.home() / 'Downloads' / output_filename
+    
+    try:
+        output_path.parent.mkdir(parents=True, exist_ok=True) 
+        df_final.to_csv(output_path, index=False, encoding='utf-8')
+        print(f"\n================ EXPORTACIÓN EXITOSA ================")
+        print(f"Archivo guardado en: {output_path}")
+    except Exception as e:
+        print(f"Error crítico al exportar el archivo: {e}")
+        sys.exit(1) # Detiene el orquestador si la exportación falla.

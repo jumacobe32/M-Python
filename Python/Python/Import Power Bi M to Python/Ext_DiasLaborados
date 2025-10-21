@@ -1,0 +1,143 @@
+import pandas as pd
+import requests
+from pandas import json_normalize
+import re
+
+# ==============================================================================
+# CONFIGURACIÓN
+# ==============================================================================
+API_URL = "https://kpis.grupo-ortiz.site/Controllers/apiController.php?op=api"
+COLUMNAS_IDENTIFICADORAS_UNPIVOT = ["date", "planta", "SEGMENTO"]
+
+# ==============================================================================
+# TABLA DE CATÁLOGO (Necesaria para el Join)
+# ==============================================================================
+# ⚠️ ADVERTENCIA: Esta función SIMULA la tabla externa Cat_DiasLaborables.
+# En tu entorno real, DEBES cargar esta tabla desde su fuente (archivo o base de datos).
+def simular_tabla_catalogo():
+    """Simula la tabla de catálogo usada para traducir las claves de días."""
+    data = {
+        'DIAS LABORABLES': ['DIAS_TRABAJADOS', 'DIAS_CALENDARIO', 'DIAS_NO_LABORABLES'],
+        'CONCEPTO': ['Días Trabajados', 'Días del Mes', 'Días Feriados']
+    }
+    df = pd.DataFrame(data)
+    df['DIAS LABORABLES'] = df['DIAS LABORABLES'].str.upper()
+    return df
+
+
+def transformar_api_a_reporte():
+    print("Iniciando extracción y transformación de la API...")
+
+    # --- PASO 1: Extracción de la api (Origen) ---
+    try:
+        response = requests.get(API_URL, headers={"Accept": "application/json"}, timeout=15)
+        response.raise_for_status()
+        json_data = response.json()
+    except requests.exceptions.RequestException as e:
+        print(f"❌ ERROR: Falló la conexión o la API. {e}")
+        return pd.DataFrame()
+
+    # --- PASO 2: Búsqueda robusta y Expansión de GENERAL ---
+    
+    # Búsqueda de la clave 'GENERAL' de forma insensible a mayúsculas/minúsculas
+    general_key = None
+    for key in json_data.keys():
+        if key.strip().upper() == 'GENERAL':
+            general_key = key
+            break
+
+    # 2a. Verificación del contenido
+    if not general_key or not isinstance(json_data[general_key], list):
+        keys_available = [k for k in json_data.keys()]
+        print(f"❌ ERROR: No se encontró la clave 'GENERAL' que sea una lista en el nivel raíz.")
+        print(f"Las claves disponibles en la respuesta de la API son: {keys_available}")
+        print("Por favor, verifica si la clave que contiene tus datos es diferente (p. ej., 'General', 'Data', etc.).")
+        return pd.DataFrame()
+
+    # 2b. Aplanamiento de la lista encontrada
+    try:
+        lista_registros_general = json_data[general_key]
+        df_registros_general = json_normalize(lista_registros_general)
+        print(f"✅ Registros aplanados correctamente usando la clave: '{general_key}'")
+    except Exception as e:
+        print(f"❌ ERROR: Falló el aplanamiento de los registros. Esto podría indicar que la lista no contiene registros consistentes. {e}")
+        return pd.DataFrame()
+
+    # --- PASO 3: Filtrado de columnas (Simula ListaFiltradaCamposGeneral) ---
+    
+    cols_a_mantener = [
+        col for col in df_registros_general.columns
+        if col in ['date', 'planta', 'SEGMENTO'] or col.startswith('DIAS')
+    ]
+    df_filtrado = df_registros_general[cols_a_mantener].copy()
+
+    # --- PASO 4: Anulación de dinamización (Unpivot - Paso 10) ---
+    
+    cols_identificadoras_unpivot = [col for col in COLUMNAS_IDENTIFICADORAS_UNPIVOT if col in df_filtrado.columns]
+    cols_a_dinamizar = [col for col in df_filtrado.columns if col.startswith('DIAS')]
+
+    if not cols_a_dinamizar:
+         print("❌ ADVERTENCIA: No se encontraron columnas 'DIAS_...' para dinamizar (Unpivot).")
+         return df_filtrado
+
+    df_unpivot = pd.melt(
+        df_filtrado,
+        id_vars=cols_identificadoras_unpivot,
+        value_vars=cols_a_dinamizar,
+        var_name="Concepto_Dias",
+        value_name="Dias_Laborados"
+    )
+    
+    # --- PASO 5: Join con Catálogo (Simula pasos 11-12) ---
+    df_catalogo = simular_tabla_catalogo()
+    
+    # Asegurar mayúsculas para el join
+    df_catalogo['DIAS LABORABLES'] = df_catalogo['DIAS LABORABLES'].str.upper()
+    df_unpivot['Concepto_Dias'] = df_unpivot['Concepto_Dias'].str.upper()
+
+    # Inner Join para simular 'Table.NestedJoin(..., JoinKind.Inner)'
+    df_join = pd.merge(
+        df_unpivot,
+        df_catalogo,
+        left_on='Concepto_Dias',
+        right_on='DIAS LABORABLES',
+        how='inner'
+    )
+
+    # Renombrar CONCEPTO y limpiar columnas de join
+    df_join = df_join.rename(columns={'CONCEPTO': 'Conceptos_DiasLaborados'})
+    df_join = df_join.drop(columns=["SEGMENTO", "Concepto_Dias", "DIAS LABORABLES"], errors='ignore')
+
+    # --- PASO 6: Limpieza final (Simula pasos 13-16) ---
+    
+    # Columnas reordenadas
+    df_resultado = df_join.reindex(columns=["date", "planta", "Conceptos_DiasLaborados", "Dias_Laborados"])
+
+    # Tipo cambiado
+    df_resultado["date"] = pd.to_datetime(df_resultado["date"], errors='coerce').dt.date
+    df_resultado["planta"] = df_resultado["planta"].astype(str)
+    df_resultado["Conceptos_DiasLaborados"] = df_resultado["Conceptos_DiasLaborados"].astype(str)
+    df_resultado["Dias_Laborados"] = pd.to_numeric(df_resultado["Dias_Laborados"], errors='coerce').astype('Int64')
+
+    # Duplicados quitados
+    df_resultado = df_resultado.drop_duplicates().reset_index(drop=True)
+
+    print("✔️ Transformación de API a Reporte completada.")
+    return df_resultado
+
+# ==============================================================================
+# EJECUCIÓN
+# ==============================================================================
+if __name__ == '__main__':
+    df_final = transformar_api_a_reporte()
+
+    if not df_final.empty:
+        print("\n================ RESULTADO FINAL DE LA CONVERSIÓN ================")
+        print(f"Filas resultantes: {len(df_final)}")
+        
+        print("Primeras 5 filas:")
+        print(df_final.head().to_markdown(index=False))
+        print("\nTipos de datos finales:")
+        print(df_final.dtypes)
+    else:
+        print("\n🛑 El DataFrame final está vacío. Verifica la estructura de la API o ajusta la clave en el código si es necesario.")

@@ -97,7 +97,7 @@ if __name__ == '__main__':
         exit()
     
     # EXPORTACIÓN DEL RESULTADO A LA CARPETA DE DESCARGAS
-    output_filename = 'ext_data_gsheet.xlsx' # Cambiamos la extensión a .xlsx
+    output_filename = 'ConceptosInventario.xlsx' # Cambiamos la extensión a .xlsx
     
     try:
         # 1. Determinar la ruta de la carpeta de Descargas

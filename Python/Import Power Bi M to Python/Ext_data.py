@@ -1,0 +1,257 @@
+import pandas as pd
+import requests
+import json
+from typing import List, Dict, Any, Optional
+from pathlib import Path  # <-- Importamos Path para manejo de rutas
+
+# --- 1. CONFIGURACIÓN ---
+API_URL = "https://kpis.grupo-ortiz.site/Controllers/apiController.php?op=api"
+HEADERS = {'Accept': 'application/json'}
+
+# Columnas de identificación
+ID_VARS = ["date", "planta", "SEGMENTO"] 
+# Columnas de reportes (ESTOS SON LOS PREFIJOS ANIDADOS)
+REPORTE_COLS = ["VENTAS 360", "PRODUCCION 360", "INVENTARIOS 360", "DESEMPEÑO 360"]
+
+
+# ----------------------------------------------------------------------------------
+# --- FUNCIONES AUXILIARES ---
+# ----------------------------------------------------------------------------------
+
+def safe_to_dict(value: Any) -> Any:
+    """Intenta convertir un valor a diccionario/lista si es una cadena que parece JSON."""
+    if isinstance(value, str) and (value.strip().startswith('{') or value.strip().startswith('[')):
+        try:
+            return json.loads(value)
+        except json.JSONDecodeError:
+            pass
+    return value
+
+def find_report_column_name(df: pd.DataFrame, target_name: str) -> Optional[str]:
+    """Busca el nombre de columna real en el DataFrame (función adaptada, menos crítica después de la corrección principal)."""
+    # Si las columnas ya están anidadas (Ej: 'VENTAS 360.Columna'), solo necesitamos buscar el prefijo.
+    normalized_target = target_name.lower().replace(' ', '') + '.'
+    
+    for col in df.columns:
+        # Busca si el inicio normalizado de alguna columna coincide con el target
+        normalized_col_prefix = col.split('.')[0].lower().replace(' ', '') + '.'
+        if normalized_col_prefix == normalized_target:
+            # Retorna el nombre del prefijo del reporte
+            return target_name 
+    return None
+
+# ----------------------------------------------------------------------------------
+# --- FUNCIÓN DE EXTRACCIÓN (CORRECCIÓN APLICADA) ---
+# ----------------------------------------------------------------------------------
+
+def extraer_datos_api(url: str, headers: Dict[str, str]) -> pd.DataFrame:
+    """
+    Extrae, aplana el DataFrame base. La CORRECCIÓN clave es mantener el DataFrame
+    completo con los prefijos anidados para que la siguiente función los procese.
+    """
+    try:
+        respuesta = requests.get(url, headers=headers)
+        respuesta.raise_for_status()
+        datos_json = respuesta.json()
+
+        if not isinstance(datos_json, dict):
+            print("Fallo: La respuesta JSON no es un diccionario (Record) como se esperaba.")
+            return pd.DataFrame()
+        
+        # 1. Imitar Record.ToTable y obtener la lista de datos.
+        # Asumiendo que la lista de datos a aplanar es el valor de alguna clave dentro del diccionario
+        df_temp = pd.DataFrame(list(datos_json.items()), columns=['Name', 'Value'])
+        list_rows = df_temp[df_temp['Value'].apply(lambda x: isinstance(x, list))]
+        if list_rows.empty or not list_rows.iloc[0]['Value']:
+            # Podría ser que la API devuelve una lista directamente, o el diccionario está vacío.
+            # Intentaremos asumir la lista más grande si no se encuentra inmediatamente.
+            list_data = None
+            for key, value in datos_json.items():
+                if isinstance(value, list) and value:
+                    list_data = value
+                    break
+            
+            if not list_data:
+                print("Fallo: No se encontró la lista de registros anidada o está vacía.")
+                return pd.DataFrame() 
+        else:
+            list_data = list_rows.iloc[0]['Value']
+
+        # 2. Aplanamiento inicial (con prefijos de reporte)
+        df_base = pd.json_normalize(list_data, sep='.')
+        
+        # 3. Lógica de Renombrado GENERAL (y otras claves aplanadas)
+        col_map = {}
+        for col in df_base.columns:
+            if col.startswith('GENERAL.'):
+                col_map[col] = col.split('.')[-1]
+        
+        # 4. Aplicamos el renombramiento
+        if col_map:
+            df_base.rename(columns=col_map, inplace=True)
+            print(f"Renombradas {len(col_map)} columnas anidadas (GENERAL, etc.) con éxito.")
+        
+        # 5. Verificamos que al menos un reporte exista como prefijo.
+        report_cols_present = [col for col in REPORTE_COLS if any(c.startswith(f"{col}.") for c in df_base.columns)]
+        
+        if not report_cols_present:
+            # Diagnóstico de error (si vuelve a fallar)
+            print("\n" + "="*50)
+            print("ERROR CRÍTICO: No se encontraron prefijos de las columnas de reporte en el DataFrame base.")
+            # print("=> COLUMNAS BUSCADAS: ", REPORTE_COLS)
+            # print("=> COLUMNAS REALES (PREFIJOS): ", [c.split('.')[0] for c in df_base.columns if '.' in c])
+            print("="*50 + "\n")
+            return pd.DataFrame()
+
+        # DEVOLVEMOS EL DATAFRAME COMPLETO para que la expansión lo procese.
+        return df_base
+
+    except requests.exceptions.RequestException as e:
+        print(f"Error al extraer de la API: {e}")
+        return pd.DataFrame() 
+    except Exception as e:
+        print(f" Ocurrió un error inesperado durante la extracción: {e}")
+        return pd.DataFrame()
+
+# ----------------------------------------------------------------------------------
+# --- FUNCIÓN DE EXPANSIÓN DE REPORTES (ADAPTACIÓN) ---
+# ----------------------------------------------------------------------------------
+
+def expandir_y_unificar_reporte(
+    df_base: pd.DataFrame, 
+    columna_expandir: str, # Ej: "VENTAS 360"
+    nombre_reporte: str, 
+    columnas_a_quitar: List[str] # Lista ya no utilizada, se deja por compatibilidad.
+) -> pd.DataFrame:
+    """
+    Procesa las columnas anidadas que ya fueron aplanadas por json_normalize, 
+    quitando el prefijo y realizando el unpivot.
+    """
+    
+    # 1. Búsqueda de todas las columnas que comienzan con el prefijo (Ej: 'VENTAS 360.')
+    prefix = f"{columna_expandir}."
+    report_data_cols = [col for col in df_base.columns if col.startswith(prefix)]
+
+    if not report_data_cols:
+        return pd.DataFrame()
+
+    # 2. Seleccionamos solo las columnas de ID y las columnas de reporte específicas
+    id_cols_present = [col for col in ID_VARS if col in df_base.columns]
+    
+    # Creamos un DataFrame solo con las columnas a pivotar + ID.
+    df_expand = df_base[id_cols_present + report_data_cols].copy()
+    
+    # 3. Quitamos el prefijo (Ej: 'VENTAS 360.') de los nombres de columna
+    new_report_data_cols = [col.replace(prefix, '') for col in report_data_cols]
+    col_map = dict(zip(report_data_cols, new_report_data_cols))
+    df_expand.rename(columns=col_map, inplace=True)
+    
+    # 4. Preparación para el Unpivot (Desdinamización)
+    unpivot_id_vars = id_cols_present
+    value_vars = new_report_data_cols 
+    
+    # 5. Realizar el Unpivot
+    df_unpivot = df_expand.melt(
+        id_vars=unpivot_id_vars, 
+        value_vars=value_vars, 
+        var_name="Concepto Reporte", 
+        value_name="Valor" 
+    ).dropna(subset=['Valor'])
+    
+    # 6. Agregar Columna Reporte
+    df_unpivot['Reporte'] = nombre_reporte
+    
+    df_unpivot = df_unpivot.dropna(subset=id_cols_present, how='all')
+
+    return df_unpivot
+
+# ----------------------------------------------------------------------------------
+# --- EJECUCIÓN DEL FLUJO ETL COMPLETO ---
+# ----------------------------------------------------------------------------------
+
+if __name__ == '__main__':
+    
+    print("Iniciando Extracción y Aplanamiento Inicial...")
+    df_base = extraer_datos_api(API_URL, HEADERS)
+    
+    if df_base.empty:
+        print(" No se pudo extraer la base de datos o está vacía. Finalizando.")
+        exit()
+    
+    print(f"✔️ Datos extraídos y aplanados a nivel inicial. Filas: {len(df_base)}")
+    
+    # 2. DEFINICIÓN Y APLICACIÓN DE REPORTES
+    reportes_config = [
+        ("DESEMPEÑO 360", "Desempeño 360", []),
+        ("VENTAS 360", "Ventas 360", []),
+        ("PRODUCCION 360", "Produccion 360", []),
+        ("INVENTARIOS 360", "Inventarios 360", []),
+    ]
+    
+    lista_tablas = []
+    
+    for col_expandir, nom_reporte, _ in reportes_config:
+        # col_expandir es ahora el prefijo (Ej: "VENTAS 360")
+        df_reporte = expandir_y_unificar_reporte(df_base, col_expandir, nom_reporte, [])
+        if not df_reporte.empty:
+            lista_tablas.append(df_reporte)
+            print(f"   ✔️ Reporte '{nom_reporte}' generado ({len(df_reporte)} filas).")
+
+    if not lista_tablas:
+        print("Ningún reporte pudo ser generado. Finalizando.")
+        exit()
+        
+    # CONCATENA_TABLAS (Table.Combine)
+    df_final = pd.concat(lista_tablas, ignore_index=True)
+    print(f"    Tablas concatenadas. Filas totales: {len(df_final)}")
+    
+    # 3. TRANSFORMACIONES FINALES
+
+    # Renombrar date a Fecha
+    df_final.rename(columns={'date': 'Fecha'}, inplace=True)
+
+    # Filtrar plantas excluidas
+    plantas_a_excluir = ["BRUCKNER", "DESCONOCIDO", "RECICLADORA"]
+    df_final = df_final[~df_final['planta'].isin(plantas_a_excluir)].copy()
+    
+    # Cambiar Tipos
+    df_final['Valor'] = pd.to_numeric(df_final['Valor'], errors='coerce')
+    df_final['Fecha'] = pd.to_datetime(df_final['Fecha'], errors='coerce')
+    df_final = df_final.astype({
+        "planta": 'str',
+        "SEGMENTO": 'str',
+        "Reporte": 'str',
+        "Concepto Reporte": 'str'
+    }, errors='ignore')
+
+    # --- 4. EXPORTACIÓN DEL RESULTADO A LA CARPETA DE DESCARGAS ---
+    output_filename = 'Ext_Datos.csv'
+    
+    try:
+        # 1. Determinar la ruta de la carpeta de Descargas de forma universal
+        # Path.home() obtiene el directorio principal del usuario (ej: C:\Users\USUARIO)
+
+        descargas_dir = Path.home() / 'Downloads'
+        
+        # Asegurarse de que la ruta de salida existe y es segura
+        descargas_dir.mkdir(parents=True, exist_ok=True) 
+        
+        output_path = descargas_dir / output_filename
+
+        # 2. Exportar el DataFrame a CSV
+        # index=False: No incluye el índice de Pandas en el archivo CSV
+        df_final.to_csv(output_path, index=False, encoding='utf-8')
+        
+        print("\n================ EXPORTACIÓN ================")
+        print(f" Exportación exitosa. Archivo guardado en:")
+        print(f"{output_path}")
+
+    except Exception as e:
+        print(f" Error crítico al exportar el archivo: {e}")
+        
+    # Resultado final
+    print("\n================ RESULTADO FINAL EN MEMORIA ================")
+    print(f"Filas finales después de filtros y limpieza: {len(df_final)}")
+    print(df_final.head())
+    print("\nTipos de datos finales:")
+    print(df_final.dtypes)

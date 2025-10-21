@@ -1,0 +1,175 @@
+import subprocess
+import sys
+import os
+from typing import List
+from datetime import datetime
+
+# ==============================================================================
+#                      CONFIGURACIÓN PRINCIPAL
+# ==============================================================================
+
+#  1. RUTA AL INTÉRPRETE DE PYTHON
+# Se recomienda usar 'python' si está en el PATH. Si no funciona, reemplace con la ruta completa.
+PYTHON_EXECUTABLE = 'python' 
+
+#  2. LISTA DE SCRIPTS A EJECUTAR
+# Asegúrese de que las rutas y extensiones de sus scripts (.py) sean correctas.
+SCRIPTS_TO_RUN: List[str] = [
+    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\Ext_data.py',
+    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\ConceptosReporte.py',
+    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\ConceptoInventario.py',
+    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\ConceptosMaquinas.py',
+    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\DiasFestivos.py',
+    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\Cat_DiasLaborablesCapacidad.py',
+    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\Cat_DiasLaborables.py',
+    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\Ext_DiasLaborados.py',
+    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\Ext_Atencion a clientes.py',
+    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\TR_Real.py'
+    #r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\Ext_DiasLaborados.py'
+    # Añada más rutas de scripts aquí:
+    
+]
+
+#  3. CONFIGURACIÓN DEL ARCHIVO DE LOG
+# Directorio donde se guardará el archivo de log.
+LOG_BASE_DIR = r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Procesamiento_Scripts'
+# Prefijo del nombre del archivo de log.
+LOG_FILE_PREFIX = 'Procesamiento_Scripts'
+
+
+# ==============================================================================
+#                      FUNCIÓN DE LOGGING
+# ==============================================================================
+
+def log_message(message: str, log_path: str):
+    """Añade marca de tiempo al mensaje, lo imprime en consola y lo escribe en el archivo de log."""
+    
+    # Añadir marca de tiempo: [YYYY-MM-DD HH:MM:SS]
+    timestamp = datetime.now().strftime("[%Y-%m-%d %H:%M:%S]")
+    full_message = f"{timestamp} {message}"
+    
+    # 1. Imprimir en consola
+    print(full_message)
+    
+    # 2. Escribir en archivo de log
+    try:
+        # Asegurarse de que el directorio del log exista
+        log_dir = os.path.dirname(log_path)
+        # Si log_dir no está vacío, crea el directorio si no existe.
+        if log_dir and not os.path.exists(log_dir):
+            os.makedirs(log_dir, exist_ok=True)
+            
+        with open(log_path, 'a', encoding='utf-8') as f:
+            f.write(full_message + "\n")
+            
+    except Exception as e:
+        # Esto solo se imprime en consola si falla el log
+        print(f"ERROR DE LOGGING: No se pudo escribir en el archivo {log_path}. Razón: {e}")
+
+# ==============================================================================
+#                      FUNCIÓN DE EJECUCIÓN
+# ==============================================================================
+
+def execute_python_script(script_path: str, python_exe: str, log_path: str) -> bool:
+    """Ejecuta un script Python usando subprocess y registra el resultado."""
+    
+    script_name = os.path.basename(script_path)
+    
+    # 1. Registrar Inicio
+    log_message(f"--- INICIANDO PROCESO: {script_name} ---", log_path)
+    
+    comando = [python_exe, script_path]
+    log_message(f"   Comando: {' '.join(comando)}", log_path)
+    
+    try:
+        # Ejecutar el proceso y capturar la salida
+        resultado = subprocess.run(
+            comando, 
+            capture_output=True, 
+            text=True, 
+            check=False, # Permite manejar el código de retorno manualmente
+            encoding='utf-8',       
+            errors='replace',
+            env=dict(os.environ, PYTHONIOENCODING='utf-8')    
+        )
+        
+        return_code = resultado.returncode
+        
+        if return_code == 0:
+            # 2. Registrar Éxito
+            log_message(f" ÉXITO: {script_name} completado (Código 0).", log_path)
+            
+            # Registrar la salida estándar (stdout) si existe
+            if resultado.stdout and resultado.stdout.strip():
+                log_message(f"   Salida Estándar (stdout):\n{resultado.stdout.strip()}", log_path)
+            return True
+        else:
+            # 3. Registrar Fallo
+            log_message(f" FALLO: {script_name} finalizó con CÓDIGO DE ERROR {return_code}.", log_path)
+            log_message("--- Salida de Error Estándar (stderr) ---", log_path)
+            
+            # Chequear por None antes de llamar a strip()
+            error_output = resultado.stderr if resultado.stderr is not None else ""
+            log_message(error_output.strip() or "No hay mensajes de error específicos.", log_path)
+            
+            log_message("-----------------------------------------", log_path)
+            
+            if return_code == 2:
+                log_message(" DIAGNÓSTICO: Código 2 = Archivo/Comando no encontrado. Revise rutas.", log_path)
+            
+            return False
+
+    except FileNotFoundError:
+        log_message(f" ERROR CRÍTICO: El intérprete '{python_exe}' no fue encontrado.", log_path)
+        log_message("   Asegúrese de que Python está en el PATH o que la ruta es correcta.", log_path)
+        return False
+    except Exception as e:
+        log_message(f" ERROR INESPERADO al ejecutar {script_name}: {e}", log_path)
+        return False
+
+# ==============================================================================
+#                      EJECUCIÓN DEL FLUJO PRINCIPAL
+# ==============================================================================
+
+if __name__ == '__main__':
+    
+    # 0. Generar el nombre de archivo de log dinámico con fecha y hora
+    timestamp_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+    LOG_FILE_PATH = os.path.join(LOG_BASE_DIR, f"{LOG_FILE_PREFIX}_{timestamp_str}.log")
+    
+    # 1. Configuración inicial del log
+    log_message(f"\n########################################################", LOG_FILE_PATH)
+    log_message(f"####### INICIO DE PROCESAMIENTO MULTI-SCRIPT ###########", LOG_FILE_PATH)
+    log_message(f"Log de salida en: {LOG_FILE_PATH}", LOG_FILE_PATH)
+    log_message(f"Iniciando el procesamiento de {len(SCRIPTS_TO_RUN)} scripts...", LOG_FILE_PATH)
+    log_message(f"Python Executable: {PYTHON_EXECUTABLE}", LOG_FILE_PATH)
+    log_message(f"########################################################\n", LOG_FILE_PATH)
+    
+    scripts_fallidos = []
+    
+    # 2. Recorre y ejecuta cada script
+    for script_file in SCRIPTS_TO_RUN:
+        exito = execute_python_script(script_file, PYTHON_EXECUTABLE, LOG_FILE_PATH)
+        
+        if not exito:
+            scripts_fallidos.append(script_file)
+            
+            # Puedes agregar aquí una lógica para detener todo el proceso 
+            # si un script es CRÍTICO y falla (ej: break)
+            # break 
+    
+    # 3. Resumen Final
+    log_message("\n========================================================", LOG_FILE_PATH)
+    log_message("               RESUMEN DE PROCESAMIENTO                 ", LOG_FILE_PATH)
+    log_message("========================================================", LOG_FILE_PATH)
+    
+    if not scripts_fallidos:
+        log_message("🎉 Todos los scripts se ejecutaron con éxito.", LOG_FILE_PATH)
+        sys.exit(0) # Salida de éxito global
+    else:
+        log_message(f"🚨 Se detectaron {len(scripts_fallidos)} fallos en los siguientes scripts:", LOG_FILE_PATH)
+        for script in scripts_fallidos:
+            log_message(f" - {script}", LOG_FILE_PATH)
+        
+        log_message(f"################ FIN DE PROCESAMIENTO ##################\n", LOG_FILE_PATH)
+        sys.exit(1) # Salida de fallo global

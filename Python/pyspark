@@ -1,0 +1,70 @@
+import requests
+import json
+from pyspark.sql import SparkSession
+from pyspark.sql.types import StructType, StructField, IntegerType, StringType, ArrayType, MapType
+
+# --- 1. CONFIGURACIÓN INICIAL DE SPARK ---
+spark = SparkSession.builder\
+    .appName("API_to_PySpark") \
+    .master("local[*]") \
+    .getOrCreate()
+
+print(" SparkSession iniciada.")
+
+# --- 2. OBTENER DATOS DE LA API ---
+api_url = "https://kpis.grupo-ortiz.site/Controllers/apiController.php?op=api"
+data = [] # Inicializamos 'data' como una lista vacía
+
+try:
+    # Solicitud HTTP: Usamos 'requests' (en plural)
+    response = requests.get(api_url) 
+    
+    # Manejo de errores HTTP (4xx, 5xx): raise_for_status() va dentro del try
+    response.raise_for_status()
+
+    # Conversión a JSON: Usamos el método .json() (con paréntesis)
+    data = response.json() 
+    
+    # Verificación de datos
+    if isinstance(data, list) and len(data) > 0:
+        print(f" Datos obtenidos de la API. Número de registros: {len(data)}")
+    elif isinstance(data, dict):
+        # Si la API devuelve un diccionario (objeto) que contiene la lista de datos
+        # Podrías necesitar ajustar esta línea para acceder a la lista real
+        print(" Advertencia: La API devolvió un objeto (diccionario), no una lista directa.")
+        # Aquí podrías intentar data = data['nombre_de_la_clave_con_datos']
+        # Por ahora, dejamos 'data' como el diccionario devuelto.
+        
+    else:
+        print(" Advertencia: La API respondió, pero los datos no son el formato esperado o están vacíos.")
+        data = [] # Aseguramos que 'data' sea una lista vacía para la siguiente fase
+
+# Bloque 'except' OBLIGATORIO para manejar errores de red o HTTP
+except requests.exceptions.RequestException as e:
+    print(f" Error crítico al obtener los datos de la API: {e}")
+    # 'data' permanece como una lista vacía
+
+# --- 3. CARGAR DATOS EN PYSPARK ---
+
+if data:
+    try:
+        # Crea el DataFrame de PySpark. Spark inferirá el esquema automáticamente.
+        df = spark.createDataFrame(data)
+
+        # Muestra el resultado
+        print("\n--- Esquema del DataFrame (PySpark) ---")
+        df.printSchema()
+
+        print("\n--- Primeras filas del DataFrame ---")
+        df.show(5, truncate=False) # truncate=False para ver el contenido completo de las celdas
+        
+    except Exception as e:
+        print(f"\n Error al crear el DataFrame de PySpark: {e}")
+        print("Revisa la estructura de los datos devueltos por la API, especialmente si contienen datos anidados complejos.")
+
+else:
+    print("\n Proceso finalizado sin crear el DataFrame, ya que no se obtuvieron datos válidos de la API.")
+
+
+# --- 4. DETENER SPARK ---
+spark.stop()

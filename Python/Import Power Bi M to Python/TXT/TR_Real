@@ -9,17 +9,16 @@ from functools import reduce
 # Rutas de Archivos: Se usan las rutas locales proporcionadas por el usuario.
 RUTA_EXT_DATOS = r"C:\Users\USUARIO\Downloads\Ext_Datos.csv"
 RUTA_CATALOGO = r"C:\Users\USUARIO\Downloads\ConceptosReporte.xlsx"
-RUTA_SALIDA_EXCEL = r"C:\Users\USUARIO\Downloads\TR_Real.xlsx" # Archivo de salida
+RUTA_SALIDA_EXCEL = r"C:\Users\USUARIO\Downloads\Reporte_Consolidado.xlsx" # Archivo de salida
 
-# Claves de JOIN
+# Claves: Se utiliza el nombre estandarizado (con underscore) en la lógica de Pandas
 JOIN_COLS_ORIGEN = ["Concepto_Reporte", "Reporte"]
 JOIN_COLS_CATALOGO = ["CONCEPTO REPORTE", "SECCION"]
 
-# Claves de AGRUPACIÓN (Índice del Pivot)
 GRUPO_COLS = ["Fecha", "planta", "Division", "Reporte", "Concepto", "Unidad", "Orden", "Concepto2", "Concepto Capacidad"]
 SALDO_COLS = ["Real", "Meta", "Valor Tope", "Valor Planta", "Valor Transito", "Valor Capacidad", "Valor Capacidad 91"]
 
-# Mapeo de nombres originales del catálogo
+# Mapeo de nombres originales del catálogo (Simula la expansión en M)
 EXPANSION_RENAME_MAP = {
     "CONCEPTO": "Concepto",
     "UNIDAD": "Unidad",
@@ -51,19 +50,17 @@ def cargar_datos():
     
     # Cargar Origen (Ext_Datos)
     try:
-        # Se lee el CSV con la codificación que soporta Ñ y acentos
-        df_origen = pd.read_csv(RUTA_EXT_DATOS, encoding='utf-8') 
+        df_origen = pd.read_csv(RUTA_EXT_DATOS)
         
-        # CORRECCIÓN CRÍTICA: Renombrar 'Concepto Reporte' y 'SEGMENTO'
+        # 💥 CORRECCIÓN CRÍTICA (Simula Table.RenameColumns y corrige el error de columna)
         columnas_renombrar = {"SEGMENTO": "Division"}
-        if "Concepto Reporte" in df_origen.columns:
-            columnas_renombrar["Concepto Reporte"] = "Concepto_Reporte"
+        if "Concepto Reporte" in df_origen.columns: # Detecta el nombre con espacio
+            columnas_renombrar["Concepto Reporte"] = "Concepto_Reporte" # Renombra a underscore
             
         df_origen.rename(columns=columnas_renombrar, inplace=True)
         
         # Limpieza y conversión de 'Valor' a numérico
         if 'Valor' in df_origen.columns:
-            # La limpieza de formato es crucial para valores numéricos
             df_origen['Valor'] = df_origen['Valor'].astype(str)
             df_origen['Valor'] = (
                 df_origen['Valor']
@@ -80,8 +77,8 @@ def cargar_datos():
 
     # Cargar Catálogo (ConceptosReporte)
     try:
-        # Usar openpyxl como motor de lectura para compatibilidad con Excel.
-        df_catalogo = pd.read_excel(RUTA_CATALOGO, engine='openpyxl') 
+        # Se asume lectura de Excel por la extensión .xlsx en la ruta
+        df_catalogo = pd.read_excel(RUTA_CATALOGO)
         print(f"✅ Catálogo ConceptosReporte cargado ({len(df_catalogo)} filas).")
     except Exception as e:
         print(f"❌ ERROR al cargar Catálogo: {e}")
@@ -98,8 +95,8 @@ def transformar_logica_m(df_origen, df_catalogo):
     if df_origen is None or df_catalogo is None:
         return pd.DataFrame()
 
-    # 1. Normalización de Claves de JOIN (Crítica para el merge)
-    print("\n--- NORMALIZACIÓN DE CLAVES DE JOIN ---")
+    # 1. Normalización de Claves (Esencial para el Join. M lo hace implícitamente mejor)
+    print("\n--- NORMALIZACIÓN DE CLAVES ---")
     for col in JOIN_COLS_ORIGEN:
         df_origen[col] = df_origen[col].astype(str).str.upper().str.strip()
     for col in JOIN_COLS_CATALOGO:
@@ -115,7 +112,7 @@ def transformar_logica_m(df_origen, df_catalogo):
     )
     
     if df_join.empty:
-        print("❌ ERROR DE JOIN: El DataFrame combinado está vacío.")
+        print("❌ ERROR DE JOIN: El DataFrame combinado está vacío. (No hay coincidencias después de normalizar).")
         return pd.DataFrame()
 
     print(f"✅ Join con Catálogo completado ({len(df_join)} filas).")
@@ -123,21 +120,9 @@ def transformar_logica_m(df_origen, df_catalogo):
     # 3. Expansión y Renombrado (Se expandió ConceptosReporte)
     df_expandido = df_join.copy().rename(columns=EXPANSION_RENAME_MAP)
     
-    # 💥 CORRECCIÓN CRÍTICA: NORMALIZAR COLUMNAS DE AGRUPACIÓN DEL CATÁLOGO
-    # Esto asegura que "Concepto" del catálogo, por ejemplo, no tenga espacios extra 
-    # o diferencias de mayúsculas/minúsculas que rompan el pivot.
-    print("--- NORMALIZACIÓN DE CLAVES DE AGRUPACIÓN ---")
-    cols_a_normalizar_post_join = [
-        "Concepto", "Unidad", "Concepto2", "Concepto Capacidad", "TipoSaldo"
-    ]
-    for col in cols_a_normalizar_post_join:
-        if col in df_expandido.columns:
-            df_expandido[col] = df_expandido[col].astype(str).str.upper().str.strip()
-        else:
-            print(f"⚠️ Advertencia: La columna de agrupación '{col}' no se encontró para normalizar.")
-
-    
     # 4. Preparación para Pivot
+    df_expandido['TipoSaldo'] = df_expandido['TipoSaldo'].astype(str).str.upper().str.strip()
+    
     valid_tipos_encontrados = [t for t in df_expandido['TipoSaldo'].unique() if t in TIPO_SALDO_MAP_COLUMNAS.keys()]
 
     if not valid_tipos_encontrados:
@@ -147,7 +132,8 @@ def transformar_logica_m(df_origen, df_catalogo):
     df_pivot_source = df_expandido[df_expandido['TipoSaldo'].isin(valid_tipos_encontrados)].copy()
     df_pivot_source['Columna Final'] = df_pivot_source['TipoSaldo'].map(TIPO_SALDO_MAP_COLUMNAS)
 
-    # 5. Pivot y Agrupación (Consolida saldos por columnas base)
+    # 5. Pivot y Agrupación (FCN_TipoSaldoAColumnas, ConcatenaSaldos y AgrupaConceptos)
+    # pd.pivot_table reemplaza la creación de 7 tablas, la concatenación y la agrupación.
     cols_base = [col for col in GRUPO_COLS if col in df_expandido.columns]
     
     try:
@@ -164,7 +150,7 @@ def transformar_logica_m(df_origen, df_catalogo):
         print(f"❌ ERROR durante la operación pivot/groupby: {e}")
         return pd.DataFrame()
     
-    # Asegurar que todas las columnas de saldo existen y son float
+    # Asegurar que todas las columnas de saldo existen (simula el null a 0 de Table.ReplaceValue)
     for col in SALDO_COLS:
         if col not in df_agrupado.columns:
             df_agrupado[col] = 0.0
@@ -197,7 +183,6 @@ if __name__ == '__main__':
             
             # 🚀 EXPORTAR A EXCEL
             try:
-                # La exportación a Excel es robusta con el formato .xlsx
                 df_reporte_final.to_excel(RUTA_SALIDA_EXCEL, index=False)
                 print(f"✅ Exportación a Excel exitosa: El reporte se guardó en:\n{RUTA_SALIDA_EXCEL}")
             except Exception as e:

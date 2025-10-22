@@ -8,37 +8,24 @@ from datetime import datetime
 #                      CONFIGURACIÓN PRINCIPAL
 # ==============================================================================
 
-#  1. RUTA AL INTÉRPRETE DE PYTHON
+# 🛑 1. RUTA AL INTÉRPRETE DE PYTHON
 # Se recomienda usar 'python' si está en el PATH. Si no funciona, reemplace con la ruta completa.
 PYTHON_EXECUTABLE = 'python' 
 
-#  2. LISTA DE SCRIPTS A EJECUTAR
+# 🛑 2. LISTA DE SCRIPTS A EJECUTAR
 # Asegúrese de que las rutas y extensiones de sus scripts (.py) sean correctas.
 SCRIPTS_TO_RUN: List[str] = [
     r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\Ext_data.py',
-    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\ConceptosReporte.py',
-    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\ConceptoInventario.py',
-    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\ConceptosMaquinas.py',
-    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\ConceptosProdFlag.py',
-    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\DiasFestivos.py',
-    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\Cat_DiasLaborablesCapacidad.py',
-    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\Cat_DiasLaborables.py',
-    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\Ext_DiasLaborados.py',
-    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\Ext_Atencion a clientes.py',
-    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\TR_Real.py',
-    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\TR_Datos.py',
-    #r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\Ext_DiasLaborados.py'
     # Añada más rutas de scripts aquí:
-    
+    # r'C:\ruta\al\script_B.py',
+    # r'C:\ruta\al\script_C.py',
 ]
 
-#  3. CONFIGURACIÓN DEL ARCHIVO DE LOG
+# 🛑 3. CONFIGURACIÓN DEL ARCHIVO DE LOG
 # Directorio donde se guardará el archivo de log.
 LOG_BASE_DIR = r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Procesamiento_Scripts'
 # Prefijo del nombre del archivo de log.
-LOG_FILE_PREFIX = 'Financieros_Diarios'
-
-
+LOG_FILE_PREFIX = 'Procesamiento_Scripts'
 
 
 # ==============================================================================
@@ -68,7 +55,7 @@ def log_message(message: str, log_path: str):
             
     except Exception as e:
         # Esto solo se imprime en consola si falla el log
-        print(f"ERROR DE LOGGING: No se pudo escribir en el archivo {log_path}. Razón: {e}")
+        print(f"❌ ERROR DE LOGGING: No se pudo escribir en el archivo {log_path}. Razón: {e}")
 
 # ==============================================================================
 #                      FUNCIÓN DE EJECUCIÓN
@@ -101,7 +88,7 @@ def execute_python_script(script_path: str, python_exe: str, log_path: str) -> b
         
         if return_code == 0:
             # 2. Registrar Éxito
-            log_message(f" ÉXITO: {script_name} completado (Código 0).", log_path)
+            log_message(f"✔️ ÉXITO: {script_name} completado (Código 0).", log_path)
             
             # Registrar la salida estándar (stdout) si existe
             if resultado.stdout and resultado.stdout.strip():
@@ -109,7 +96,7 @@ def execute_python_script(script_path: str, python_exe: str, log_path: str) -> b
             return True
         else:
             # 3. Registrar Fallo
-            log_message(f" FALLO: {script_name} finalizó con CÓDIGO DE ERROR {return_code}.", log_path)
+            log_message(f"❌ FALLO: {script_name} finalizó con CÓDIGO DE ERROR {return_code}.", log_path)
             log_message("--- Salida de Error Estándar (stderr) ---", log_path)
             
             # Chequear por None antes de llamar a strip()
@@ -119,16 +106,16 @@ def execute_python_script(script_path: str, python_exe: str, log_path: str) -> b
             log_message("-----------------------------------------", log_path)
             
             if return_code == 2:
-                log_message(" DIAGNÓSTICO: Código 2 = Archivo/Comando no encontrado. Revise rutas.", log_path)
+                log_message("⚠️ DIAGNÓSTICO: Código 2 = Archivo/Comando no encontrado. Revise rutas.", log_path)
             
             return False
 
     except FileNotFoundError:
-        log_message(f" ERROR CRÍTICO: El intérprete '{python_exe}' no fue encontrado.", log_path)
+        log_message(f"❌ ERROR CRÍTICO: El intérprete '{python_exe}' no fue encontrado.", log_path)
         log_message("   Asegúrese de que Python está en el PATH o que la ruta es correcta.", log_path)
         return False
     except Exception as e:
-        log_message(f" ERROR INESPERADO al ejecutar {script_name}: {e}", log_path)
+        log_message(f"❌ ERROR INESPERADO al ejecutar {script_name}: {e}", log_path)
         return False
 
 # ==============================================================================

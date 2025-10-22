@@ -1,0 +1,611 @@
+[2025-10-22 13:17:48] 
+########################################################
+[2025-10-22 13:17:48] ####### INICIO DE PROCESAMIENTO SEGMENTADO ###########
+[2025-10-22 13:17:48] Log de salida en: C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Procesamiento_Scripts\Proceso_Completo_20251022_131748.log
+[2025-10-22 13:17:48] Segmento a ejecutar: TODOS (19 scripts)
+[2025-10-22 13:17:48] Python Executable: python
+[2025-10-22 13:17:48] ########################################################
+
+[2025-10-22 13:17:48] --- INICIANDO PROCESO: Ext_data.py ---
+[2025-10-22 13:17:48]    Comando: python C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\Ext_data.py
+[2025-10-22 13:17:52]  ÉXITO: Ext_data.py completado (Código 0).
+[2025-10-22 13:17:52]    Salida Estándar (stdout):
+Iniciando Extracción y Aplanamiento Inicial...
+Renombradas 94 columnas anidadas (GENERAL, etc.) con éxito.
+✔️ Datos extraídos y aplanados a nivel inicial. Filas: 3636
+   ✔️ Reporte 'Desempeño 360' generado (29088 filas).
+   ✔️ Reporte 'Ventas 360' generado (69084 filas).
+   ✔️ Reporte 'Produccion 360' generado (410868 filas).
+   ✔️ Reporte 'Inventarios 360' generado (54540 filas).
+    Tablas concatenadas. Filas totales: 563580
+
+================ EXPORTACIÓN ================
+✅ Exportación exitosa. Archivo guardado con codificación UTF-8-SIG (Compatible con Excel/Ñ):
+C:\Users\USUARIO\Downloads\Ext_Datos.csv
+
+================ RESULTADO FINAL EN MEMORIA ================
+Filas finales después de filtros y limpieza: 261330
+       Fecha     planta Division Concepto Reporte        Valor        Reporte
+1 2025-10-21  STRETCH 3  STRETCH    IMPORTE TOTAL   2184568.66  Desempeño 360
+2 2025-10-20  STRETCH 3  STRETCH    IMPORTE TOTAL    494802.56  Desempeño 360
+6 2025-10-20    SACOS 1     SACO    IMPORTE TOTAL  10340473.55  Desempeño 360
+7 2025-10-20  STRETCH 1  STRETCH    IMPORTE TOTAL   1186589.73  Desempeño 360
+8 2025-10-20  ARPILLA 2  ARPILLA    IMPORTE TOTAL    170840.63  Desempeño 360
+
+Tipos de datos finales:
+Fecha               datetime64[ns]
+planta                      object
+Division                    object
+Concepto Reporte            object
+Valor                      float64
+Reporte                     object
+dtype: object
+[2025-10-22 13:17:52] --- INICIANDO PROCESO: ConceptosReporte.py ---
+[2025-10-22 13:17:52]    Comando: python C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\ConceptosReporte.py
+[2025-10-22 13:17:53]  ÉXITO: ConceptosReporte.py completado (Código 0).
+[2025-10-22 13:17:53]    Salida Estándar (stdout):
+================ INICIANDO EJECUCIÓN FORZADA ================
+✔️ DataFrame final creado con éxito a partir de la estructura proporcionada.
+
+================ EXPORTACIÓN ================
+✅ Exportación exitosa a Excel. Archivo guardado en: C:\Users\USUARIO\Downloads\ConceptosReporte.xlsx
+
+================ RESULTADO FINAL (COMBINADO) ================
+Filas procesadas: 156
+Primeras 15 filas:
+| CONCEPTO              | UNIDAD   | SECCION        |   ORDEN | CONCEPTO 2            |   CAPACIDAD | CAPACIDAD 91   | CONCEPTO CAPACIDAD   | TIPO SALDO   | CONCEPTO REPORTE      |
+|:----------------------|:---------|:---------------|--------:|:----------------------|------------:|:---------------|:---------------------|:-------------|:----------------------|
+| 💵 VENTAS             | $        | DESEMPEÑO 360  |       1 | 💵 VENTAS             |         nan |                |                      | REAL         | IMPORTE TOTAL         |
+| 💵 VENTAS             | $        | DESEMPEÑO 360  |       1 | 💵 VENTAS             |         nan |                |                      | META         | META VENTA IMPORTE    |
+| 📉 COSTO DE VENTAS    | $        | DESEMPEÑO 360  |       2 | 📉 COSTO DE VENTAS    |         nan |                |                      | REAL         | COSTO TOTAL           |
+| 📉 COSTO DE VENTAS    | $        | DESEMPEÑO 360  |       2 | 📉 COSTO DE VENTAS    |         nan |                |                      | META         | META COSTO            |
+| 💰 GASTO DE OPERACIÓN | $        | DESEMPEÑO 360  |       3 | 💰 GASTO DE OPERACIÓN |         nan |                |                      | REAL         | GASTO OPERATIVO       |
+| 💰 GASTO DE OPERACIÓN | $        | DESEMPEÑO 360  |       3 | 💰 GASTO DE OPERACIÓN |         nan |                |                      | META         | META GASTO            |
+| 💸 UTILIDAD NETA      | $        | DESEMPEÑO 360  |       4 | 💸 UTILIDAD NETA      |         nan |                |                      | REAL         | FLUJO NETO            |
+| 💸 UTILIDAD NETA      | $        | DESEMPEÑO 360  |       4 | 💸 UTILIDAD NETA      |         nan |                |                      | META         | META UTILIDAD         |
+| 1A KG                 | KG       | PRODUCCION 360 |       5 | 1A                    |         nan |                |                      | REAL         | PRIMERA PRODUCCION KG |
+| 1A KG                 | KG       | PRODUCCION 360 |       5 | 1A                    |         nan |                |                      | META         | META PRIMERA KG       |
+| 1A PZ                 | PZ       | PRODUCCION 360 |       6 | 1A                    |         nan |                |                      | REAL         | PRIMERA PRODUCCION PZ |
+| 1A PZ                 | PZ       | PRODUCCION 360 |       6 | 1A                    |         nan |                |                      | META         | META PRIMERA PZ       |
+| 2DA KG                | KG       | PRODUCCION 360 |       7 | 2DA                   |         nan |                |                      | REAL         | SEGUNDA PRODUCCION KG |
+| 2DA KG                | KG       | PRODUCCION 360 |       7 | 2DA                   |         nan |                |                      | META         | META SEGUNDA KG       |
+| 2DA PZ                | PZ       | PRODUCCION 360 |       8 | 2DA                   |         nan |                |                      | REAL         | SEGUNDA PRODUCCION PZ |
+[2025-10-22 13:17:53] --- INICIANDO PROCESO: ConceptoInventario.py ---
+[2025-10-22 13:17:53]    Comando: python C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\ConceptoInventario.py
+[2025-10-22 13:17:54]  ÉXITO: ConceptoInventario.py completado (Código 0).
+[2025-10-22 13:17:54]    Salida Estándar (stdout):
+Iniciando la extracción de Google Sheets...
+✔️ Transformaciones completadas con éxito.
+
+================ EXPORTACIÓN ================
+✅ Exportación exitosa a Excel. Archivo guardado en:
+C:\Users\USUARIO\Downloads\ConceptosInventario.xlsx
+
+================ RESULTADO FINAL EN MEMORIA ================
+Filas finales: 21
+  CONCEPTO  UNIDAD  ...  TIPO SALDO                CONCEPTO REPORTE
+0    PT KG   KILOS  ...  VALOR TOPE           PT INVENTARIO TOPE KG
+1    PT PZ  PIEZAS  ...  VALOR TOPE           PT INVENTARIO TOPE PZ
+2   2DA KG   KILOS  ...  VALOR TOPE   PT INVENTARIO TOPE KG SEGUNDA
+3   2DA PZ  PIEZAS  ...  VALOR TOPE  PT INVENTARIO TOPE PZS SEGUNDA
+4    MP KG   KILOS  ...  VALOR TOPE              MP INVENTARIO TOPE
+
+[5 rows x 8 columns]
+[2025-10-22 13:17:54] --- INICIANDO PROCESO: ConceptosMaquinas.py ---
+[2025-10-22 13:17:54]    Comando: python C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\ConceptosMaquinas.py
+[2025-10-22 13:17:55]  ÉXITO: ConceptosMaquinas.py completado (Código 0).
+[2025-10-22 13:17:55]    Salida Estándar (stdout):
+Iniciando extracción y tratamiento de REAL/META como TEXTO...
+
+✔️ Mapeo y transformación completados. Celdas vacías aseguradas.
+
+================ EXPORTACIÓN ================
+✅ Exportación exitosa a Excel. Archivo guardado en: C:\Users\USUARIO\Downloads\ConceptosMaquinas.xlsx
+
+================ RESULTADO FINAL (MAESTRO) ================
+Filas procesadas: 68
+Primeras 5 filas (Las celdas vacías ahora son cadenas vacías):
+0                  CONCEPTO                                 REAL  ... ORDEN  PLANTA
+0    EXTRUDER MONOFILAMENTO    PRODUCCION_EXTRUDER_MONOFILAMENTO  ...    11  CUERDA
+1  EXTRUDER RAFIA FIBRILADA  PRODUCCION EXTRUDER RAFIA FIBRILADA  ...    12  CUERDA
+2    EXTRUDER RAFIA SOPLADA    PRODUCCION EXTRUDER RAFIA SOPLADA  ...    13  CUERDA
+3               CABLEADORAS                                       ...    14  CUERDA
+4  BOLERAS RAFIAS FIBRILADA                                       ...    15  CUERDA
+
+[5 rows x 6 columns]
+
+Tipos de Columna:
+0
+CONCEPTO    object
+REAL        object
+META        object
+UNIDAD      object
+ORDEN        Int64
+PLANTA      object
+dtype: object
+[2025-10-22 13:17:55] --- INICIANDO PROCESO: ConceptosProdFlag.py ---
+[2025-10-22 13:17:55]    Comando: python C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\ConceptosProdFlag.py
+[2025-10-22 13:17:57]  ÉXITO: ConceptosProdFlag.py completado (Código 0).
+[2025-10-22 13:17:57]    Salida Estándar (stdout):
+URL de exportación generada: https://docs.google.com/spreadsheets/d/1EK96qUKEW2dfnRBT7NfeVouAFouUXDOvHRVVGJ8gs34/export?format=csv&gid=1118832498
+Iniciando extracción y transformación de 'NUEVO DESEMPEÑO'...
+
+✅ PASO 1: Archivo leído, saltando 9 filas. Filtro en Column9 (Columna I).
+⚠️ PASO 2: Aplicando filtro directo (SIN limpieza robusta).
+
+--- DIAGNÓSTICO DE FILTRO (Columna I - Column9) ---
+Primeros 10 valores NO vacíos/NaN después de conversión: ['1.0', '1.0', '1.0', '1.0', '1.0', '1.0', '1.0', '1.0', '1.0', '2.0']
+Se espera que en este rango aparezca el valor '1.0' (Numérico) o '1' (Texto).
+-----------------------------------------------------
+✔️ Transformación completada.
+
+================ EXPORTACIÓN ================
+✅ Exportación exitosa a Excel. Archivo guardado en: C:\Users\USUARIO\Downloads\ConceptosProdFlag.xlsx
+
+================ RESULTADO FINAL ================
+Filas procesadas: 9
+Primeras 5 filas:
+          Column2         Column6 Column9
+1           1A kg  Produccion 360       1
+2           1A pz  Produccion 360       1
+3          2DA kg  Produccion 360       1
+4          2DA pz  Produccion 360       1
+5  Desperdicio kg  Produccion 360       1
+[2025-10-22 13:17:57] --- INICIANDO PROCESO: DiasFestivos.py ---
+[2025-10-22 13:17:57]    Comando: python C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\DiasFestivos.py
+[2025-10-22 13:17:58]  ÉXITO: DiasFestivos.py completado (Código 0).
+[2025-10-22 13:17:58]    Salida Estándar (stdout):
+--------------------------------------------------
+✅ ¡Éxito! El archivo Excel ha sido guardado.
+Ruta completa: C:\Users\USUARIO\Downloads\DiasFestivos.xlsx
+--------------------------------------------------
+
+--- Vista Previa de los Días Festivos (2025-2026) ---
+| Fecha               | Festivo                    |
+|:--------------------|:---------------------------|
+| 2025-01-01 00:00:00 | Año Nuevo                  |
+| 2025-02-03 00:00:00 | Día de la Constitución     |
+| 2025-03-17 00:00:00 | Natalicio de Benito Juárez |
+| 2025-05-01 00:00:00 | Día del Trabajo            |
+| 2025-09-16 00:00:00 | Día de la Independencia    |
+| 2025-11-17 00:00:00 | Día de la Revolución       |
+| 2025-12-25 00:00:00 | Navidad                    |
+| 2026-01-01 00:00:00 | Año Nuevo                  |
+| 2026-02-02 00:00:00 | Día de la Constitución     |
+| 2026-03-16 00:00:00 | Natalicio de Benito Juárez |
+| 2026-05-01 00:00:00 | Día del Trabajo            |
+| 2026-09-16 00:00:00 | Día de la Independencia    |
+| 2026-11-16 00:00:00 | Día de la Revolución       |
+| 2026-12-25 00:00:00 | Navidad                    |
+
+Tipos de datos de las columnas:
+Fecha      datetime64[ns]
+Festivo            object
+dtype: object
+[2025-10-22 13:17:58] --- INICIANDO PROCESO: Cat_DiasLaborablesCapacidad.py ---
+[2025-10-22 13:17:58]    Comando: python C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\Cat_DiasLaborablesCapacidad.py
+[2025-10-22 13:17:58]  ÉXITO: Cat_DiasLaborablesCapacidad.py completado (Código 0).
+[2025-10-22 13:17:58]    Salida Estándar (stdout):
+================ EXPORTACIÓN COMPLETADA ================
+✔️ Tabla exportada exitosamente a: C:\Users\USUARIO\Downloads\Cat_DiasLaborablesCapacidad.xlsx
+Filas exportadas: 31
+
+El catálogo de capacidad ajustado a dos columnas:
+| CONCEPTO                                | DIAS LABORABLES               |
+|:----------------------------------------|:------------------------------|
+| META CAPACIDAD EXTRUDER                 | DIAS EXTRUDER                 |
+| META CAPACIDAD EXTRUDER MONOFILAMENTO   | DIAS EXTRUDER MONOFILAMENTO   |
+| META CAPACIDAD EXTRUDER RAFIA FIBRILADA | DIAS EXTRUDER RAFIA FIBRILADA |
+| META CAPACIDAD EXTRUDER RAFIA SOPLADA   | DIAS EXTRUDER RAFIA SOPLADA   |
+| META CAPACIDAD TELARES                  | DIAS TELARES                  |
+| META CAPACIDAD TELAR JUMBO              | DIAS TELARES JUMBO            |
+| META CAPACIDAD VALVULADO                | DIAS VALVULADO                |
+| META CAPACIDAD LAMINADO                 | DIAS LAMINADO                 |
+| META CAPACIDAD IMPRESION                | DIAS IMPRESION                |
+| META CAPACIDAD CONFECCION               | DIAS CONFECCION               |
+| META CAPACIDAD CABLEADORAS              | DIAS CABLEADORAS              |
+| META CAPACIDAD BOLERAS RAFIAS FIBRILADA | DIAS BOLERAS RAFIAS FIBRILADA |
+| META CAPACIDAD BOLERAS RAFIA SOPLADA    | DIAS BOLERAS RAFIA SOPLADA    |
+| META CAPACIDAD OVER                     | DIAS OVER                     |
+| META CAPACIDAD AUTOMATEX                | DIAS AUTOMATEX                |
+| META CAPACIDAD PRENSA                   | DIAS PRENSA                   |
+| META CAPACIDAD FFS                      | DIAS FFS                      |
+| META CAPACIDAD SML0                     | DIAS SML0                     |
+| META CAPACIDAD SML1                     | DIAS SML1                     |
+| META CAPACIDAD SML2                     | DIAS SML2                     |
+| META CAPACIDAD SML4                     | DIAS SML4                     |
+| META CAPACIDAD PREESTIRADO              | DIAS PREESTIRADO              |
+| META CAPACIDAD REBOBINADO               | DIAS REBOBINADO               |
+| META CAPACIDAD CORTADORA                | DIAS CORTADORA                |
+| META CAPACIDAD BOLSEO                   | DIAS BOLSEO                   |
+| META CAPACIDAD PELETIZADORA             | DIAS PELETIZADORA             |
+| META CAPCIDAD LAVADORA                  | DIAS LAVADORA                 |
+| META CAPACIDAD RECTA                    | DIAS RECTA                    |
+| META CAPACIDAD CORTE                    | DIAS CORTE                    |
+| META CAPACIDAD VAREX KG                 | DIAS VAREX KG                 |
+| META CAPACIDAD ROLLONATIC KG            | DIAS ROLL O MATIC KG          |
+[2025-10-22 13:17:58] --- INICIANDO PROCESO: Cat_DiasLaborables.py ---
+[2025-10-22 13:17:58]    Comando: python C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\Cat_DiasLaborables.py
+[2025-10-22 13:17:59]  ÉXITO: Cat_DiasLaborables.py completado (Código 0).
+[2025-10-22 13:17:59]    Salida Estándar (stdout):
+Intentando cargar datos desde el archivo Excel: C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\Datos de power bi (1).xlsx
+Usando la pestaña: NUEVO DESEMPEÑO
+✔️ Carga de Excel exitosa.
+
+[DIAGNÓSTICO INICIAL - ORIGEN EXCEL]
+Dimensiones de la tabla cruda: (75, 14)
+-----------------------------------------
+
+[CARGA DE CATÁLOGO EXCEL]
+Dimensiones del catálogo Excel cargado: (32, 2)
+
+--- PASO 1: APLICANDO TRANSFORMACIONES DE POWER QUERY (M) SIMPLIFICADA ---
+✔️ Concatenación y filtrado exitoso. Total de registros finales: 85
+
+--- PASO 2: APLICANDO FORMATO FINAL (2 COLUMNAS) ---
+
+================ RESULTADO FINAL ================ 
+                               CONCEPTO               DIAS LABORABLES
+                               💵 Ventas            DIAS VENTA IMPORTE
+                      📉 Costo de Ventas                    DIAS COSTO
+                   💰 Gasto de Operación                    DIAS GASTO
+                        💸 Utilidad Neta                 DIAS UTILIDAD
+                                    NaN                           NaN
+                                  1A kg               DIAS PRIMERA KG
+                                  1A pz              DIAS PRIMERA PZS
+                                 2DA kg               DIAS SEGUNDA KG
+                                 2DA pz              DIAS SEGUNDA PZS
+                         Desperdicio kg           DIAS DESPERDICIO KG
+                       PELETIZADO KILOS             DIAS PELETIZADO P
+                       PRODUCCION TOTAL                           NaN
+                         KG POR PERSONA           DIAS KG POR PERSONA
+                         PZ POR PERSONA           DIAS PZ POR PERSONA
+                               EXTRUDER                 DIAS EXTRUDER
+                 EXTRUDER MONOFILAMENTO   DIAS EXTRUDER MONOFILAMENTO
+               EXTRUDER RAFIA FIBRILADA DIAS EXTRUDER RAFIA FIBRILADA
+                 EXTRUDER RAFIA SOPLADA   DIAS EXTRUDER RAFIA SOPLADA
+                                TELARES                  DIAS TELARES
+                            TELAR JUMBO            DIAS TELARES JUMBO
+                              VALVULADO                DIAS VALVULADO
+                               LAMINADO                 DIAS LAMINADO
+                              IMPRESION                DIAS IMPRESION
+                             CONFECCION               DIAS CONFECCION
+                            CABLEADORAS              DIAS CABLEADORAS
+               BOLERAS RAFIAS FIBRILADA DIAS BOLERAS RAFIAS FIBRILADA
+                  BOLERAS RAFIA SOPLADA    DIAS BOLERAS RAFIA SOPLADA
+                                   OVER                     DIAS OVER
+                              AUTOMATEX                DIAS AUTOMATEX
+                                PRENSA                    DIAS PRENSA
+                                    FFS                      DIAS FFS
+                                   SML0                     DIAS SML0
+                                   SML1                     DIAS SML1
+                                   SML2                     DIAS SML2
+                                   SML4                     DIAS SML4
+                            PREESTIRADO              DIAS PREESTIRADO
+                             REBOBINADO               DIAS REBOBINADO
+                              CORTADORA                DIAS CORTADORA
+                                 BOLSEO                   DIAS BOLSEO
+                           PELETIZADORA             DIAS PELETIZADORA
+                               LAVADORA                 DIAS LAVADORA
+                                  RECTA                    DIAS RECTA
+                                  CORTE                    DIAS CORTE
+                                  VAREX                 DIAS VAREX KG
+                           ROLL O MATIC          DIAS ROLL O MATIC KG
+                          EFICIENCIA KG  DIAS LABORADOS EFICIENCIA KG
+                          EFICIENCIA PZ                           NaN
+                            COSTO VENTA           DIAS COSTO VENTA KG
+                           FACTURADO KG             DIAS FACTURADO KG
+                           FACTURADO PZ             DIAS FACTURADO PZ
+                PRECIO VENTA PELETIZADO         DIAS PELETIZADO VENTA
+                 PRECIO VENTA TRITURADO          DIAS TRITURADO VENTA
+                    PRECIO VENTA LAVADO            DIAS LAVADO VENTA 
+                               CONCEPTO               DIAS LABORABLES
+                META CAPACIDAD EXTRUDER                 DIAS EXTRUDER
+  META CAPACIDAD EXTRUDER MONOFILAMENTO   DIAS EXTRUDER MONOFILAMENTO
+META CAPACIDAD EXTRUDER RAFIA FIBRILADA DIAS EXTRUDER RAFIA FIBRILADA
+  META CAPACIDAD EXTRUDER RAFIA SOPLADA   DIAS EXTRUDER RAFIA SOPLADA
+                 META CAPACIDAD TELARES                  DIAS TELARES
+             META CAPACIDAD TELAR JUMBO            DIAS TELARES JUMBO
+               META CAPACIDAD VALVULADO                DIAS VALVULADO
+                META CAPACIDAD LAMINADO                 DIAS LAMINADO
+               META CAPACIDAD IMPRESION                DIAS IMPRESION
+              META CAPACIDAD CONFECCION               DIAS CONFECCION
+             META CAPACIDAD CABLEADORAS              DIAS CABLEADORAS
+META CAPACIDAD BOLERAS RAFIAS FIBRILADA DIAS BOLERAS RAFIAS FIBRILADA
+   META CAPACIDAD BOLERAS RAFIA SOPLADA    DIAS BOLERAS RAFIA SOPLADA
+                    META CAPACIDAD OVER                     DIAS OVER
+               META CAPACIDAD AUTOMATEX                DIAS AUTOMATEX
+                  META CAPACIDAD PRENSA                   DIAS PRENSA
+                     META CAPACIDAD FFS                      DIAS FFS
+                    META CAPACIDAD SML0                     DIAS SML0
+                    META CAPACIDAD SML1                     DIAS SML1
+                    META CAPACIDAD SML2                     DIAS SML2
+                    META CAPACIDAD SML4                     DIAS SML4
+             META CAPACIDAD PREESTIRADO              DIAS PREESTIRADO
+              META CAPACIDAD REBOBINADO               DIAS REBOBINADO
+               META CAPACIDAD CORTADORA                DIAS CORTADORA
+                  META CAPACIDAD BOLSEO                   DIAS BOLSEO
+            META CAPACIDAD PELETIZADORA             DIAS PELETIZADORA
+                 META CAPCIDAD LAVADORA                 DIAS LAVADORA
+                   META CAPACIDAD RECTA                    DIAS RECTA
+                   META CAPACIDAD CORTE                    DIAS CORTE
+                META CAPACIDAD VAREX KG                 DIAS VAREX KG
+           META CAPACIDAD ROLLONATIC KG          DIAS ROLL O MATIC KG
+
+Total de filas finales: 85
+================================================= 
+
+--- PASO 3: EXPORTANDO A EXCEL ---
+✔️ Exportación exitosa a: C:/Users/USUARIO/Downloads/Cat_DiasLaborables.xlsx (Con Encabezados)
+[2025-10-22 13:17:59] --- INICIANDO PROCESO: Ext_DiasLaborados.py ---
+[2025-10-22 13:17:59]    Comando: python C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\Ext_DiasLaborados.py
+[2025-10-22 13:18:09]  ÉXITO: Ext_DiasLaborados.py completado (Código 0).
+[2025-10-22 13:18:09]    Salida Estándar (stdout):
+Iniciando extracción y transformación de la API...
+✅ Estructura JSON aplanada dinámicamente.
+Intentando cargar catálogo desde: C:\Users\USUARIO\Downloads\Cat_DiasLaborables.xlsx
+✅ Catálogo de días laborales cargado correctamente.
+✔️ Transformación de API a Reporte completada.
+
+================ RESULTADO FINAL DE LA EXTRACCION ================
+Filas resultantes: 230868
+Primeras 5 filas:
+| date       | planta      | Conceptos_DiasLaborados   | Dias_Laborados   |
+|:-----------|:------------|:--------------------------|:-----------------|
+| 2029-09-27 | DESCONOCIDO | SML2                      | <NA>             |
+| 2029-09-27 | DESCONOCIDO | META CAPACIDAD SML2       | <NA>             |
+| 2025-10-21 | STRETCH 3   | SML2                      | 31               |
+| 2025-10-21 | STRETCH 3   | META CAPACIDAD SML2       | 31               |
+| 2025-10-20 | STRETCH 3   | SML2                      | 31               |
+
+Tipos de datos finales:
+date                       object
+planta                     object
+Conceptos_DiasLaborados    object
+Dias_Laborados              Int64
+dtype: object
+
+ Exportación completada: Los datos se guardaron en: C:\Users\USUARIO\Downloads\Ext_DiasLaborados.xlsx
+[2025-10-22 13:18:09] --- INICIANDO PROCESO: Ext_Atencion a clientes.py ---
+[2025-10-22 13:18:09]    Comando: python C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\Ext_Atencion a clientes.py
+[2025-10-22 13:18:11]  ÉXITO: Ext_Atencion a clientes.py completado (Código 0).
+[2025-10-22 13:18:11]    Salida Estándar (stdout):
+Iniciando extracción de la API...
+✅ Datos extraídos. Registros iniciales: 126
+✔️ Transformación completada.
+
+================ RESULTADO DE PANDAS ================
+Filas resultantes: 126
+
+Primeras 5 filas:
+| Fecha      | planta     | Cliente                             |      Teléfono | Empleado                          | Categoría            | Clasificación                      | Comentario                                                                                                                   | Orden de Venta   | Folio   | Status   | Fecha Inicio        | Fecha Atendido      | Hora de Inicio   | Hora de Fin   |   Tiempo Atencion Minutos |   IndiceAtencionClientes |
+|:-----------|:-----------|:------------------------------------|--------------:|:----------------------------------|:---------------------|:-----------------------------------|:-----------------------------------------------------------------------------------------------------------------------------|:-----------------|:--------|:---------|:--------------------|:--------------------|:-----------------|:--------------|--------------------------:|-------------------------:|
+| 2025-02-05 | ARPILLAS 2 | GABRIEL EMETERIO ECHEVERRIA SANCHEZ | +527222528841 |                                   | Calidad              | Deficiencias en Control de Calidad | No hubo la gestión adecuada para que entregaran completo.                                                                    | OVAARP1250       | GO-1949 | ABIERTO  | 2025-02-05 07:29:02 | NaT                 | 07:29:02         | NaT           |                   nan     |                        1 |
+|            |            |                                     |               |                                   |                      |                                    | Un paquete venia navajeado el empaque y 2bpaquetes de rafia venían combinados bobinas con dos calibres diferentes.           |                  |         |          |                     |                     |                  |               |                           |                          |
+| 2025-03-27 | ARPILLAS 2 |                                     | +525561871907 | ANDREA ESTEFANIA PEÑALOZA SALGADO | Atención al Cliente  | Gestión Ineficiente de Inventario  | Me. Gustaría q no tuvieran tanta rotación de personal                                                                        | OVAARP1377       | GO-4170 | CERRADO  | 2025-03-27 07:36:56 | 2025-05-16 15:20:34 | 07:36:56         | 15:20:34      |                 72463.6   |                        2 |
+|            |            |                                     |               |                                   |                      |                                    | Y q tuvieran más disponibilidad de material                                                                                  |                  |         |          |                     |                     |                  |               |                           |                          |
+|            |            |                                     |               |                                   |                      |                                    | Ya q este. Pedido q solicite ya no me. Pudieron surtir por q ya se les ternimo el. Inventario                                |                  |         |          |                     |                     |                  |               |                           |                          |
+| 2025-05-09 | ARPILLAS 2 | PUB MARCO LEON                      | +525582748400 | ANDREA ESTEFANIA PEÑALOZA SALGADO | Atención al Cliente  | Deficiencias en Control de Calidad | Medidas y precio no satisfactorio                                                                                            | OVAARP1435       | GO-6680 | CERRADO  | 2025-05-09 08:00:32 | 2025-05-19 13:27:12 | 08:00:32         | 13:27:12      |                 14726.7   |                        3 |
+| 2025-05-30 | ARPILLAS 2 | PUB- BEATRIZ CRUZ HERNADEZ          | +524251092846 | ANDREA ESTEFANIA PEÑALOZA SALGADO | Logística y Entregas | Fallas en Logística y Distribución | La falla estuvo que me cobraron  envió de mi paquete de arpillas y llego a recoger y me salen la sorpresa que no esta pagado | OVAARP1570       | GO-7877 | CERRADO  | 2025-05-30 07:50:23 | 2025-06-04 10:32:34 | 07:50:23         | 10:32:34      |                  7362.18  |                        4 |
+| 2025-06-23 | ARPILLAS 2 | PUB MARCO LEON                      | +525582748400 | ANDREA ESTEFANIA PEÑALOZA SALGADO | Atención al Cliente  | Fallas en Logística y Distribución | Pasado de precio y no cumple con las medidas que requerimos. De atención muy bien y amables                                  | OVAARP1612       | GO-9108 | CERRADO  | 2025-06-23 07:47:02 | 2025-06-23 17:12:37 | 07:47:02         | 17:12:37      |                   565.583 |                        5 |
+
+Tipos de datos finales:
+Fecha                              object
+planta                             object
+Cliente                            object
+Teléfono                           object
+Empleado                           object
+Categoría                          object
+Clasificación                      object
+Comentario                         object
+Orden de Venta                     object
+Folio                              object
+Status                             object
+Fecha Inicio               datetime64[ns]
+Fecha Atendido             datetime64[ns]
+Hora de Inicio                     object
+Hora de Fin                        object
+Tiempo Atencion Minutos           float64
+IndiceAtencionClientes              int64
+dtype: object
+
+ Exportación completada: Los datos se guardaron en: c:\Users\USUARIO\Downloads\Ext_Atencion a clientes.xlsx
+[2025-10-22 13:18:11] --- INICIANDO PROCESO: TR_Real.py ---
+[2025-10-22 13:18:11]    Comando: python C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\TR_Real.py
+[2025-10-22 13:18:17]  ÉXITO: TR_Real.py completado (Código 0).
+[2025-10-22 13:18:17]    Salida Estándar (stdout):
+Iniciando carga de datos...
+✅ Ext_Datos cargado y renombrado (261330 filas).
+✅ Catálogo ConceptosReporte cargado (156 filas).
+
+--- NORMALIZACIÓN DE CLAVES DE JOIN ---
+✅ Join con Catálogo completado (249528 filas).
+--- NORMALIZACIÓN DE CLAVES DE AGRUPACIÓN ---
+✅ Pivot y Agrupación consolidadas completadas.
+
+✅ Eliminadas filas con saldos totales en cero. Filas finales: 38799
+
+================ RESULTADO FINAL DEL REPORTE ================
+✅ Exportación a Excel exitosa: El reporte se guardó en:
+C:\Users\USUARIO\Downloads\TR_Real.xlsx
+
+Filas resultantes: 38799
+
+Primeras 5 filas:
+| Fecha      | planta   | Division   | Reporte         | Concepto              | Unidad   |   Orden | Concepto2             |   Concepto Capacidad |        Real |   Meta |   Valor Tope |   Valor Planta |   Valor Transito |   Valor Capacidad |   Valor Capacidad 91 |
+|:-----------|:---------|:-----------|:----------------|:----------------------|:---------|--------:|:----------------------|---------------------:|------------:|-------:|-------------:|---------------:|-----------------:|------------------:|---------------------:|
+| 1969-12-31 | CUERDA   | CUERDA     | DESEMPEÑO 360   | 💰 GASTO DE OPERACIÓN | $        |       3 | 💰 GASTO DE OPERACIÓN |                  nan | 1.25669e+07 |      0 |            0 |    0           |      0           |                 0 |                    0 |
+| 1969-12-31 | CUERDA   | CUERDA     | DESEMPEÑO 360   | 💵 VENTAS             | $        |       1 | 💵 VENTAS             |                  nan | 3.57317e+07 |      0 |            0 |    0           |      0           |                 0 |                    0 |
+| 1969-12-31 | CUERDA   | CUERDA     | DESEMPEÑO 360   | 💸 UTILIDAD NETA      | $        |       4 | 💸 UTILIDAD NETA      |                  nan | 5.56881e+06 |      0 |            0 |    0           |      0           |                 0 |                    0 |
+| 1969-12-31 | CUERDA   | CUERDA     | DESEMPEÑO 360   | 📉 COSTO DE VENTAS    | $        |       2 | 📉 COSTO DE VENTAS    |                  nan | 1.75959e+07 |      0 |            0 |    0           |      0           |                 0 |                    0 |
+| 1969-12-31 | CUERDA   | CUERDA     | INVENTARIOS 360 | MP KG                 | KILOS    |     105 | MP KG                 |                  nan | 0           |      0 |            0 |    1.68242e+07 |      1.25121e+07 |                 0 |                    0 |
+[2025-10-22 13:18:17] --- INICIANDO PROCESO: TR_Datos.py ---
+[2025-10-22 13:18:17]    Comando: python C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\TR_Datos.py
+[2025-10-22 13:18:31]  ÉXITO: TR_Datos.py completado (Código 0).
+[2025-10-22 13:18:31]    Salida Estándar (stdout):
+Iniciando carga de DataFrames...
+    ✅ FIX aplicado: Columna 'id' agregada con valor 1 a DiasFestivos.
+✔️ Carga de TR_Real (df_origen) completada. 38799 filas.
+
+Todos los DataFrames de origen y catálogos cargados correctamente. Iniciando transformación...
+
+================ RESULTADO FINAL DEL REPORTE ================
+Filas resultantes: 38584
+
+Primeras 5 filas:
+| Fecha               | planta   | Division   | Reporte        | Concepto                 | Unidad   |   Orden | Concepto2                | Concepto Capacidad                      |     Real |   Meta |   Valor Tope |   Valor Planta |   Valor Transito |   Valor Capacidad |   Valor Capacidad 91 |
+|:--------------------|:---------|:-----------|:---------------|:-------------------------|:---------|--------:|:-------------------------|:----------------------------------------|---------:|-------:|-------------:|---------------:|-----------------:|------------------:|---------------------:|
+| 1969-12-31 00:00:00 | CUERDA   | CUERDA     | PRODUCCION 360 | BOLERAS RAFIA SOPLADA    | KILOS    |    1000 | BOLERAS RAFIA SOPLADA    | META CAPACIDAD BOLERAS RAFIA SOPLADA    |  54065.4 |      0 |            0 |              0 |                0 |                 0 |                    0 |
+| 1969-12-31 00:00:00 | CUERDA   | CUERDA     | PRODUCCION 360 | BOLERAS RAFIAS FIBRILADA | KILOS    |    1000 | BOLERAS RAFIAS FIBRILADA | META CAPACIDAD BOLERAS RAFIAS FIBRILADA | 190477   |      0 |            0 |              0 |                0 |                 0 |                    0 |
+| 1969-12-31 00:00:00 | CUERDA   | CUERDA     | PRODUCCION 360 | CABLEADORAS              | KILOS    |    1000 | CABLEADORAS              | META CAPACIDAD CABLEADORAS              | 477502   |      0 |            0 |              0 |                0 |                 0 |                    0 |
+| 1969-12-31 00:00:00 | CUERDA   | CUERDA     | PRODUCCION 360 | EXTRUDER MONOFILAMENTO   | KILOS    |    1000 | EXTRUDER MONOFILAMENTO   | META CAPACIDAD EXTRUDER MONOFILAMENTO   | 533460   |      0 |            0 |              0 |                0 |                 0 |                    0 |
+| 1969-12-31 00:00:00 | CUERDA   | CUERDA     | PRODUCCION 360 | EXTRUDER RAFIA FIBRILADA | KILOS    |    1000 | EXTRUDER RAFIA FIBRILADA | META CAPACIDAD EXTRUDER RAFIA FIBRILADA | 228518   |      0 |            0 |              0 |                0 |                 0 |                    0 |
+
+✅ **¡Éxito!** El archivo final se ha guardado en:
+   C:\Users\USUARIO\Downloads\TR_Datos.xlsx
+[2025-10-22 13:18:31] --- INICIANDO PROCESO: Dim_Concepto.py ---
+[2025-10-22 13:18:31]    Comando: python C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\Dim_Concepto.py
+[2025-10-22 13:18:36]  ÉXITO: Dim_Concepto.py completado (Código 0).
+[2025-10-22 13:18:36]    Salida Estándar (stdout):
+Archivo de origen 'TR_Datos.xlsx' cargado.
+
+✔️ Conversión de script M a Python completada.
+
+================ RESULTADO (Catálogo de Conceptos Indexado) ================
+Filas resultantes: 59
+| Concepto                 | Reporte        |   Orden | Unidad   | Concepto2                | IdConcepto                              |   Key_Conceptos |
+|:-------------------------|:---------------|--------:|:---------|:-------------------------|:----------------------------------------|----------------:|
+| BOLERAS RAFIA SOPLADA    | PRODUCCION 360 |    1000 | KILOS    | BOLERAS RAFIA SOPLADA    | PRODUCCION 360|BOLERAS RAFIA SOPLADA    |               1 |
+| BOLERAS RAFIAS FIBRILADA | PRODUCCION 360 |    1000 | KILOS    | BOLERAS RAFIAS FIBRILADA | PRODUCCION 360|BOLERAS RAFIAS FIBRILADA |               2 |
+| CABLEADORAS              | PRODUCCION 360 |    1000 | KILOS    | CABLEADORAS              | PRODUCCION 360|CABLEADORAS              |               3 |
+| EXTRUDER MONOFILAMENTO   | PRODUCCION 360 |    1000 | KILOS    | EXTRUDER MONOFILAMENTO   | PRODUCCION 360|EXTRUDER MONOFILAMENTO   |               4 |
+| EXTRUDER RAFIA FIBRILADA | PRODUCCION 360 |    1000 | KILOS    | EXTRUDER RAFIA FIBRILADA | PRODUCCION 360|EXTRUDER RAFIA FIBRILADA |               5 |
+
+✅ **¡Éxito!** El catálogo de conceptos se ha guardado en:
+   C:\Users\USUARIO\Downloads\DimConcepto.xlsx
+[2025-10-22 13:18:36] --- INICIANDO PROCESO: Dim_Planta.py ---
+[2025-10-22 13:18:36]    Comando: python C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\Dim_Planta.py
+[2025-10-22 13:18:37]  ÉXITO: Dim_Planta.py completado (Código 0).
+[2025-10-22 13:18:37]    Salida Estándar (stdout):
+✔️ Conversión de script M a Python completada.
+
+================ RESULTADO (Catálogo de Plantas) ================
+| planta    | Division   | IdPlanta          |   Key_Plantas |
+|:----------|:-----------|:------------------|--------------:|
+| STRETCH 3 | STRETCH    | STRETCH 3|STRETCH |             1 |
+| SACOS 1   | SACO       | SACOS 1|SACO      |             2 |
+| STRETCH 1 | STRETCH    | STRETCH 1|STRETCH |             3 |
+| ARPILLA 2 | ARPILLA    | ARPILLA 2|ARPILLA |             4 |
+| ARPILLA 1 | ARPILLA    | ARPILLA 1|ARPILLA |             5 |
+| CUERDA    | CUERDA     | CUERDA|CUERDA     |             6 |
+| SACOS 2   | SACO       | SACOS 2|SACO      |             7 |
+| VAREX     | STRETCH    | VAREX|STRETCH     |             8 |
+| SACOS 3   | SACO       | SACOS 3|SACO      |             9 |
+| SACOS 4   | SACO       | SACOS 4|SACO      |            10 |
+| EMPAQUES  | EMPAQUES   | EMPAQUES|EMPAQUES |            11 |
+| STRETCH 2 | STRETCH    | STRETCH 2|STRETCH |            12 |
+| FFS       | STRETCH    | FFS|STRETCH       |            13 |
+
+✅ Catálogo de Plantas guardado en:
+   C:\Users\USUARIO\Downloads\DimPlanta.xlsx
+[2025-10-22 13:18:37] --- INICIANDO PROCESO: Dim_Empleado.py ---
+[2025-10-22 13:18:37]    Comando: python C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\Dim_Empleado.py
+[2025-10-22 13:18:37]  ÉXITO: Dim_Empleado.py completado (Código 0).
+[2025-10-22 13:18:37]    Salida Estándar (stdout):
+Archivo de origen 'Ext_Atencion a clientes.xlsx' cargado.
+
+✔️ Conversión de script M a Python completada.
+
+================ RESULTADO (Catálogo de Empleados Indexado) ================
+Filas resultantes: 3
+|   Key_Empleado | Empleado                          |
+|---------------:|:----------------------------------|
+|              1 | nan                               |
+|              2 | ANDREA ESTEFANIA PEÑALOZA SALGADO |
+|              3 | ISABEL ROSAS RAMIREZ              |
+
+✅ **¡Éxito!** El catálogo de empleados se ha guardado en:
+   C:\Users\USUARIO\Downloads\DimEmpleado.xlsx
+[2025-10-22 13:18:37] --- INICIANDO PROCESO: Dim_Planta_clientes.py ---
+[2025-10-22 13:18:37]    Comando: python C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\Dim_Planta_clientes.py
+[2025-10-22 13:18:38]  ÉXITO: Dim_Planta_clientes.py completado (Código 0).
+[2025-10-22 13:18:38]    Salida Estándar (stdout):
+Archivo de origen 'Ext_Atencion a clientes.xlsx' cargado.
+
+✔️ Conversión de script M a Python completada.
+
+================ RESULTADO (Catálogo de Plantas Cliente Indexado) ================
+Filas resultantes: 8
+|   Key_PlantasCte | planta     |
+|-----------------:|:-----------|
+|                1 | ARPILLAS 2 |
+|                2 | ARPILLAS 1 |
+|                3 | SACOS 3    |
+|                4 | STRETCH 1  |
+|                5 | EMPAQUES   |
+
+✅ **¡Éxito!** El catálogo de plantas de cliente se ha guardado en:
+   C:\Users\USUARIO\Downloads\DimPlantaClientes.xlsx
+[2025-10-22 13:18:38] --- INICIANDO PROCESO: Dim_Cliente.py ---
+[2025-10-22 13:18:38]    Comando: python C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\Dim_Cliente.py
+[2025-10-22 13:18:39]  ÉXITO: Dim_Cliente.py completado (Código 0).
+[2025-10-22 13:18:39]    Salida Estándar (stdout):
+Archivo de origen 'Ext_Atencion a clientes.xlsx' cargado.
+
+✔️ Conversión de script M a Python completada.
+
+================ RESULTADO (Catálogo de Clientes Indexado) ================
+Filas resultantes: 86
+|   Key_Cliente | Cliente                             |     Teléfono |
+|--------------:|:------------------------------------|-------------:|
+|             1 | GABRIEL EMETERIO ECHEVERRIA SANCHEZ | 527222528841 |
+|             2 | nan                                 | 525561871907 |
+|             3 | PUB MARCO LEON                      | 525582748400 |
+|             4 | PUB- BEATRIZ CRUZ HERNADEZ          | 524251092846 |
+|             5 | PUB ELVIA GUADALUPE  LOPEZ MIRANDA  | 526683960134 |
+
+✅ **¡Éxito!** El catálogo de clientes se ha guardado en:
+   C:\Users\USUARIO\Downloads\DimCliente.xlsx
+[2025-10-22 13:18:39] --- INICIANDO PROCESO: fctFinanzasDiario.py ---
+[2025-10-22 13:18:39]    Comando: python C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\fctFinanzasDiario.py
+[2025-10-22 13:18:49]  ÉXITO: fctFinanzasDiario.py completado (Código 0).
+[2025-10-22 13:18:49]    Salida Estándar (stdout):
+Iniciando la integración de la tabla de hechos con las dimensiones...
+✔️ Fechas en 'Fecha' normalizadas (horas quitadas).
+
+✔️ Integración completada. La tabla de hechos ahora usa claves numéricas.
+
+================ RESULTADO (Tabla de Hechos Integrada) ================
+Filas resultantes: 38584
+|   fctIndice |   Key_Conceptos |   Key_Plantas | Fecha               | Unidad   |   Orden | Concepto2                | Concepto Capacidad                      |     Real |   Proyectado |   Valor Tope |   Valor Planta |   Valor Transito |   Valor Capacidad |   Valor Capacidad 91 |
+|------------:|----------------:|--------------:|:--------------------|:---------|--------:|:-------------------------|:----------------------------------------|---------:|-------------:|-------------:|---------------:|-----------------:|------------------:|---------------------:|
+|           1 |               1 |             6 | 1969-12-31 00:00:00 | KILOS    |    1000 | BOLERAS RAFIA SOPLADA    | META CAPACIDAD BOLERAS RAFIA SOPLADA    |  54065.4 |            0 |            0 |              0 |                0 |                 0 |                    0 |
+|           2 |               2 |             6 | 1969-12-31 00:00:00 | KILOS    |    1000 | BOLERAS RAFIAS FIBRILADA | META CAPACIDAD BOLERAS RAFIAS FIBRILADA | 190477   |            0 |            0 |              0 |                0 |                 0 |                    0 |
+|           3 |               3 |             6 | 1969-12-31 00:00:00 | KILOS    |    1000 | CABLEADORAS              | META CAPACIDAD CABLEADORAS              | 477502   |            0 |            0 |              0 |                0 |                 0 |                    0 |
+|           4 |               4 |             6 | 1969-12-31 00:00:00 | KILOS    |    1000 | EXTRUDER MONOFILAMENTO   | META CAPACIDAD EXTRUDER MONOFILAMENTO   | 533460   |            0 |            0 |              0 |                0 |                 0 |                    0 |
+|           5 |               5 |             6 | 1969-12-31 00:00:00 | KILOS    |    1000 | EXTRUDER RAFIA FIBRILADA | META CAPACIDAD EXTRUDER RAFIA FIBRILADA | 228518   |            0 |            0 |              0 |                0 |                 0 |                    0 |
+
+✅ **¡Éxito!** La tabla de hechos final se ha guardado en:
+   C:\Users\USUARIO\Downloads\fctFinanzasDiario.xlsx
+[2025-10-22 13:18:49] --- INICIANDO PROCESO: fctAtencionClientes.py ---
+[2025-10-22 13:18:49]    Comando: python C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\fctAtencionClientes.py
+[2025-10-22 13:18:50]  ÉXITO: fctAtencionClientes.py completado (Código 0).
+[2025-10-22 13:18:50]    Salida Estándar (stdout):
+Iniciando la integración de la tabla de hechos de Atención a Clientes...
+✔️ Archivo 'Ext_Atencion a clientes' cargado.
+⚠️ Aviso: Archivo 'DimCliente' cargado sin forzar fechas.
+⚠️ Aviso: Archivo 'DimEmpleado' cargado sin forzar fechas.
+⚠️ Aviso: Archivo 'DimPlantaClientes' cargado sin forzar fechas.
+✔️ Columna 'Fecha' normalizada (horas quitadas).
+✔️ Columna 'Fecha Inicio' normalizada (horas quitadas).
+✔️ Columna 'Fecha Atendido' normalizada (horas quitadas).
+
+✔️ Integración completada. La tabla de hechos ahora usa claves numéricas.
+
+✅ **¡Éxito!** La tabla de hechos final se ha guardado en:
+   C:\Users\USUARIO\Downloads\fctAtencionClientes.xlsx
+[2025-10-22 13:18:50] 
+========================================================
+[2025-10-22 13:18:50]                RESUMEN DE PROCESAMIENTO                 
+[2025-10-22 13:18:50] ========================================================
+[2025-10-22 13:18:50] 🎉 Todos los scripts se ejecutaron con éxito.

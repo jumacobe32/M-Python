@@ -1,0 +1,121 @@
+import pandas as pd
+from pathlib import Path
+import re 
+import numpy as np 
+
+# --- CONFIGURACIÓN ---
+# ¡CAMBIA ESTA URL! Debe ser la URL de EXPORTACIÓN CSV de tu Google Sheet.
+# Ejemplo de formato de URL de exportación:
+# "https://docs.google.com/spreadsheets/d/<ID_DEL_DOCUMENTO>/gviz/tq?tqx=out:csv&sheet=<NOMBRE_DE_LA_HOJA>"
+GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/1EK96qUKEW2dfnRBT7NfeVouAFouUXDOvHRVVGJ8gs34/edit?pli=1&gid=1118832498#gid=1118832498"
+NOMBRE_HOJA_EXCEL = "NUEVO DESEMPEÑO" # Solo para referencia en logs
+OUTPUT_FILENAME = 'ConceptosProdFlag.xlsx'
+
+# Mapeo de columnas M a índices de Pandas (0-indexado)
+# La lectura desde CSV/URL no permite forzar dtypes tan fácilmente como Excel.
+COLUMNA_FILTRO_INDEX = 8 # Columna I
+COLUMNAS_SELECCIONADAS_INDEX = [1, 5, 8] # Columnas B, F, I
+COLUMNAS_FINALES_NOMBRES = ["Column2", "Column6", "Column9"] 
+
+MAX_COLUMNA_INDEX = max(COLUMNAS_SELECCIONADAS_INDEX) + 1 
+
+def extraer_y_transformar_desempeno() -> pd.DataFrame:
+    """Implementa la lógica de lectura, filtrado y selección de columnas desde Google Sheet."""
+    
+    print(f"Iniciando extracción y transformación de la hoja '{NOMBRE_HOJA_EXCEL}' desde URL...")
+    
+    # 1. Origen: Lectura con skiprows=10 desde URL
+    try:
+        # Al leer un CSV, no se puede pre-asignar nombres con 'names' si no se conoce la longitud exacta de las columnas.
+        # Primero, leemos solo el bloque de datos que nos interesa (saltando 10 filas).
+        df_completo = pd.read_csv(
+            GOOGLE_SHEET_URL,
+            header=None, 
+            skiprows=10, # Fila 11 de Excel/Sheet
+            dtype=str # Forzar TODAS las columnas a STR para manejar el filtro '1'
+        )
+        
+        # Asignar nombres genéricos después de la lectura
+        nombres_forzados = [f'Column{i+1}' for i in range(len(df_completo.columns))]
+        df_completo.columns = nombres_forzados
+        df = df_completo
+        
+    except Exception as e:
+        print(f"❌ Error crítico de lectura de Google Sheets: {e}")
+        print("Asegúrate de que la URL de exportación CSV sea correcta y accesible.")
+        return pd.DataFrame()
+    
+    columna_filtro_nombre = f'Column{COLUMNA_FILTRO_INDEX + 1}'
+    print(f"\n✅ PASO 1: Archivo leído. Filtro en {columna_filtro_nombre} (Columna I).")
+
+    # 2. Aplicamos el filtro de texto estricto (ROBUSTO)
+    print(f"✅ PASO 2: Aplicando filtro robusto para valores de texto '1'.")
+    try:
+        # --- FILTRO ROBUSTO MANTENIDO ---
+        # 1. Rellenar nulos con cadena vacía ('') para permitir que .str funcione sin fallos.
+        # 2. Convertir a string (ya forzado, pero se mantiene la cadena de métodos).
+        # 3. Eliminar caracteres invisibles (\r, \n, etc.).
+        # 4. Limpiar espacios iniciales/finales.
+        columna_texto_limpia = (
+            df[columna_filtro_nombre]
+            .fillna('') # Evita errores de NaN
+            .astype(str)
+            .str.replace(r'[\r\n\t\x00]', '', regex=True) 
+            .str.strip() 
+        )
+        
+        # Filtrar donde el valor de texto limpio sea EXACTAMENTE '1'
+        df_filtrado = df[
+            columna_texto_limpia == '1'
+        ].copy()
+        
+    except Exception as e:
+        print(f"❌ ERROR CRÍTICO al aplicar el filtro: {e}")
+        return pd.DataFrame()
+    
+    # 3. Selección y Renombrado
+    
+    columnas_a_mantener = [f'Column{i + 1}' for i in COLUMNAS_SELECCIONADAS_INDEX]
+    columnas_presentes = [col for col in columnas_a_mantener if col in df_filtrado.columns]
+    
+    df_final = df_filtrado[columnas_presentes]
+    
+    if len(df_final.columns) == len(COLUMNAS_FINALES_NOMBRES):
+        # Renombrar Column2, Column6, y Column9 (FLAG) a los nombres finales
+        df_final.columns = COLUMNAS_FINALES_NOMBRES
+    
+    print("✔️ PASO 3: Selección y Renombrado completado.")
+    return df_final
+
+
+# ----------------------------------------------------------------------------------
+## EJECUCIÓN Y EXPORTACIÓN
+# ----------------------------------------------------------------------------------
+
+if __name__ == '__main__':
+    
+    df_final = extraer_y_transformar_desempeno()
+    
+    if df_final.empty:
+        print("\n🛑 El DataFrame final está vacío. Finalizando.")
+        print("La sintaxis es correcta y es robusta. El valor de texto limpio '1' NO se encontró en la Columna I después de saltar 10 filas.")
+        exit()
+    
+    # EXPORTACIÓN DEL RESULTADO
+    try:
+        descargas_dir = Path.home() / 'Downloads'
+        output_path = descargas_dir / OUTPUT_FILENAME
+
+        df_final.to_excel(output_path, index=False)
+        
+        print("\n================ EXPORTACIÓN ================")
+        print(f"✅ Exportación exitosa a Excel. Archivo guardado en: {output_path}")
+
+    except Exception as e:
+        print(f"❌ Error al exportar el archivo: {e}")
+        
+    # Resultado final en pantalla
+    print("\n================ RESULTADO FINAL ================")
+    print(f"Filas procesadas: {len(df_final)}")
+    print("Primeras 5 filas (Column2, Column6, Column9):")
+    print(df_final.head())

@@ -15,18 +15,13 @@ PYTHON_EXECUTABLE = 'python'
 #  2. LISTA DE SCRIPTS A EJECUTAR
 # Asegúrese de que las rutas y extensiones de sus scripts (.py) sean correctas.
 SCRIPTS_TO_RUN: List[str] = [
-    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\Ext_data.py',
-    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\ConceptosReporte.py',
-    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\ConceptoInventario.py',
-    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\ConceptosMaquinas.py',
-    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\ConceptosProdFlag.py',
-    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\DiasFestivos.py',
-    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\Cat_DiasLaborablesCapacidad.py',
-    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\Cat_DiasLaborables.py',
-    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\Ext_DiasLaborados.py',
-    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\Ext_Atencion a clientes.py',
-    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\TR_Real.py',
-    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\TR_Datos.py',
+    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\Dim_Concepto.py',
+    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\Dim_Planta.py',
+    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\Dim_Planta_clientes.py',
+    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\Dim_Cliente.py',
+    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\fctFinanzasDiario.py',
+    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\fctAtencionClientes.py',
+    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\Dim_Empleado.py'
     #r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\Ext_DiasLaborados.py'
     # Añada más rutas de scripts aquí:
     
@@ -36,9 +31,7 @@ SCRIPTS_TO_RUN: List[str] = [
 # Directorio donde se guardará el archivo de log.
 LOG_BASE_DIR = r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Procesamiento_Scripts'
 # Prefijo del nombre del archivo de log.
-LOG_FILE_PREFIX = 'Financieros_Diarios'
-
-
+LOG_FILE_PREFIX = 'Modelado'
 
 
 # ==============================================================================

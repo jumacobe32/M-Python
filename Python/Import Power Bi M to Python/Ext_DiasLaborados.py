@@ -13,7 +13,7 @@ COLUMNAS_IDENTIFICADORAS_UNPIVOT = ["date", "planta", "SEGMENTO"]
 
 # RUTAS DE ARCHIVOS
 RUTA_CATALOGO = r"C:\Users\USUARIO\Downloads\Cat_DiasLaborables.xlsx"
-RUTA_EXPORTACION = r"C:\Users\USUARIO\Downloads\Reporte_DiasLaborales.xlsx" # Exportación a Excel
+RUTA_EXPORTACION = r"C:\Users\USUARIO\Downloads\Ext_DiasLaborados.xlsx" # Exportación a Excel
 
 # ==============================================================================
 # TABLA DE CATÁLOGO (Carga desde Excel)

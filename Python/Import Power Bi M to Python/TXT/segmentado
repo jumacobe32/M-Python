@@ -1,54 +1,94 @@
 import subprocess
 import sys
 import os
-from typing import List
+from typing import List, Dict
 from datetime import datetime
 
 # ==============================================================================
-#                      CONFIGURACIÓN PRINCIPAL
+#                      CONFIGURACIÓN PRINCIPAL
 # ==============================================================================
 
-#  1. RUTA AL INTÉRPRETE DE PYTHON
-# Se recomienda usar 'python' si está en el PATH. Si no funciona, reemplace con la ruta completa.
+#  1. RUTA AL INTÉRPRETE DE PYTHON
 PYTHON_EXECUTABLE = 'python' 
 
-#  2. LISTA DE SCRIPTS A EJECUTAR
-# Asegúrese de que las rutas y extensiones de sus scripts (.py) sean correctas.
-SCRIPTS_TO_RUN: List[str] = [
-    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\Ext_data.py',
-    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\ConceptosReporte.py',
-    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\ConceptoInventario.py',
-    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\ConceptosMaquinas.py',
-    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\ConceptosProdFlag.py',
-    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\DiasFestivos.py',
-    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\Cat_DiasLaborablesCapacidad.py',
-    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\Cat_DiasLaborables.py',
-    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\Ext_DiasLaborados.py',
-    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\Ext_Atencion a clientes.py',
-    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\TR_Real.py',
-    r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\TR_Datos.py',
-    #r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python\Ext_DiasLaborados.py'
-    # Añada más rutas de scripts aquí:
-    
+#  2. DEFINICIÓN DE RUTAS BASE Y SEGMENTOS
+# -----------------------------------------------------------------------------
+# Se define la ruta base para simplificar la lectura del código.
+BASE_PATH = r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Import Power Bi M to Python'
+
+# Agrupación de scripts por flujo
+#  FASE 1: EXTRACCIÓN Y PREPARACIÓN DE DATOS (FLUJO FINANCIERO / ETAPA DE PREP)
+FINANCIERO_SCRIPTS: List[str] = [
+    os.path.join(BASE_PATH, 'Ext_data.py'),
+    os.path.join(BASE_PATH, 'ConceptosReporte.py'),
+    os.path.join(BASE_PATH, 'ConceptoInventario.py'),
+    os.path.join(BASE_PATH, 'ConceptosMaquinas.py'),
+    os.path.join(BASE_PATH, 'ConceptosProdFlag.py'),
+    os.path.join(BASE_PATH, 'DiasFestivos.py'),
+    os.path.join(BASE_PATH, 'Cat_DiasLaborablesCapacidad.py'),
+    os.path.join(BASE_PATH, 'Cat_DiasLaborables.py'),
+    os.path.join(BASE_PATH, 'Ext_DiasLaborados.py'),
+    os.path.join(BASE_PATH, 'Ext_Atencion a clientes.py'),
+    os.path.join(BASE_PATH, 'TR_Real.py'),
+    os.path.join(BASE_PATH, 'TR_Datos.py'),
 ]
 
-#  3. CONFIGURACIÓN DEL ARCHIVO DE LOG
-# Directorio donde se guardará el archivo de log.
+#  FASE 2.1: MODELADO - DIMENSIONES (DEBE EJECUTARSE ANTES QUE LOS HECHOS)
+MODELADO_DIMENSIONES: List[str] = [
+    os.path.join(BASE_PATH, 'Dim_Concepto.py'),
+    os.path.join(BASE_PATH, 'Dim_Planta.py'),
+    os.path.join(BASE_PATH, 'Dim_Empleado.py'),
+    os.path.join(BASE_PATH, 'Dim_Planta_clientes.py'),
+    os.path.join(BASE_PATH, 'Dim_Cliente.py'),
+]
+
+# FASE 2.2: MODELADO - HECHOS (DEBE EJECUTARSE DESPUÉS DE LAS DIMENSIONES)
+MODELADO_HECHOS: List[str] = [
+    os.path.join(BASE_PATH, 'fctFinanzasDiario.py'),
+    os.path.join(BASE_PATH, 'fctAtencionClientes.py'),
+]
+
+
+# Estructura principal de segmentos disponibles
+SEGMENTOS_DISPONIBLES: Dict[str, List[str]] = {
+    # Flujo Financiero: Extracción y preparación de datos base.
+    "FINANCIERO": FINANCIERO_SCRIPTS, 
+    # Flujo Modelado: Dimensiones primero, luego Tablas de Hechos.
+    "MODELADO": MODELADO_DIMENSIONES + MODELADO_HECHOS, 
+}
+
+# -----------------------------------------------------------------------------
+# ✅ CONTROL PRINCIPAL: CAMBIE ESTA VARIABLE PARA ELEGIR EL SEGMENTO
+# Opciones válidas: "FINANCIERO", "MODELADO", o "TODOS".
+# -----------------------------------------------------------------------------
+SEGMENTO_A_EJECUTAR: str = "TODOS" 
+
+# Lógica para determinar la lista final de ejecución y el prefijo del log
+if SEGMENTO_A_EJECUTAR in SEGMENTOS_DISPONIBLES:
+    SCRIPTS_TO_RUN = SEGMENTOS_DISPONIBLES[SEGMENTO_A_EJECUTAR]
+    LOG_FILE_PREFIX = f'Proceso_{SEGMENTO_A_EJECUTAR}'
+elif SEGMENTO_A_EJECUTAR == "TODOS":
+    # 🚨 Flujo completo: Financiero -> Dimensiones -> Hechos
+    SCRIPTS_TO_RUN = FINANCIERO_SCRIPTS + MODELADO_DIMENSIONES + MODELADO_HECHOS
+    LOG_FILE_PREFIX = 'Proceso_Completo'
+else:
+    print(f"ERROR: Segmento '{SEGMENTO_A_EJECUTAR}' no reconocido. Ejecutando lista vacía.")
+    SCRIPTS_TO_RUN = []
+    LOG_FILE_PREFIX = 'ERROR'
+    sys.exit(1)
+
+
+#  3. CONFIGURACIÓN DEL ARCHIVO DE LOG
 LOG_BASE_DIR = r'C:\Users\USUARIO\Documents\Juan Manuel Cortes Benitez\Python\Procesamiento_Scripts'
-# Prefijo del nombre del archivo de log.
-LOG_FILE_PREFIX = 'Financieros_Diarios'
-
-
 
 
 # ==============================================================================
-#                      FUNCIÓN DE LOGGING
+#                      FUNCIÓN DE LOGGING
 # ==============================================================================
 
 def log_message(message: str, log_path: str):
     """Añade marca de tiempo al mensaje, lo imprime en consola y lo escribe en el archivo de log."""
     
-    # Añadir marca de tiempo: [YYYY-MM-DD HH:MM:SS]
     timestamp = datetime.now().strftime("[%Y-%m-%d %H:%M:%S]")
     full_message = f"{timestamp} {message}"
     
@@ -59,7 +99,6 @@ def log_message(message: str, log_path: str):
     try:
         # Asegurarse de que el directorio del log exista
         log_dir = os.path.dirname(log_path)
-        # Si log_dir no está vacío, crea el directorio si no existe.
         if log_dir and not os.path.exists(log_dir):
             os.makedirs(log_dir, exist_ok=True)
             
@@ -71,7 +110,7 @@ def log_message(message: str, log_path: str):
         print(f"ERROR DE LOGGING: No se pudo escribir en el archivo {log_path}. Razón: {e}")
 
 # ==============================================================================
-#                      FUNCIÓN DE EJECUCIÓN
+#                      FUNCIÓN DE EJECUCIÓN
 # ==============================================================================
 
 def execute_python_script(script_path: str, python_exe: str, log_path: str) -> bool:
@@ -83,7 +122,7 @@ def execute_python_script(script_path: str, python_exe: str, log_path: str) -> b
     log_message(f"--- INICIANDO PROCESO: {script_name} ---", log_path)
     
     comando = [python_exe, script_path]
-    log_message(f"   Comando: {' '.join(comando)}", log_path)
+    log_message(f"   Comando: {' '.join(comando)}", log_path)
     
     try:
         # Ejecutar el proceso y capturar la salida
@@ -94,7 +133,7 @@ def execute_python_script(script_path: str, python_exe: str, log_path: str) -> b
             check=False, # Permite manejar el código de retorno manualmente
             encoding='utf-8',       
             errors='replace',
-            env=dict(os.environ, PYTHONIOENCODING='utf-8')    
+            env=dict(os.environ, PYTHONIOENCODING='utf-8')      
         )
         
         return_code = resultado.returncode
@@ -105,7 +144,7 @@ def execute_python_script(script_path: str, python_exe: str, log_path: str) -> b
             
             # Registrar la salida estándar (stdout) si existe
             if resultado.stdout and resultado.stdout.strip():
-                log_message(f"   Salida Estándar (stdout):\n{resultado.stdout.strip()}", log_path)
+                log_message(f"   Salida Estándar (stdout):\n{resultado.stdout.strip()}", log_path)
             return True
         else:
             # 3. Registrar Fallo
@@ -125,27 +164,27 @@ def execute_python_script(script_path: str, python_exe: str, log_path: str) -> b
 
     except FileNotFoundError:
         log_message(f" ERROR CRÍTICO: El intérprete '{python_exe}' no fue encontrado.", log_path)
-        log_message("   Asegúrese de que Python está en el PATH o que la ruta es correcta.", log_path)
+        log_message("   Asegúrese de que Python está en el PATH o que la ruta es correcta.", log_path)
         return False
     except Exception as e:
         log_message(f" ERROR INESPERADO al ejecutar {script_name}: {e}", log_path)
         return False
 
 # ==============================================================================
-#                      EJECUCIÓN DEL FLUJO PRINCIPAL
+#                      EJECUCIÓN DEL FLUJO PRINCIPAL
 # ==============================================================================
 
 if __name__ == '__main__':
     
-    # 0. Generar el nombre de archivo de log dinámico con fecha y hora
+    # 0. Generar el nombre de archivo de log dinámico
     timestamp_str = datetime.now().strftime("%Y%m%d_%H%M%S")
     LOG_FILE_PATH = os.path.join(LOG_BASE_DIR, f"{LOG_FILE_PREFIX}_{timestamp_str}.log")
     
     # 1. Configuración inicial del log
     log_message(f"\n########################################################", LOG_FILE_PATH)
-    log_message(f"####### INICIO DE PROCESAMIENTO MULTI-SCRIPT ###########", LOG_FILE_PATH)
+    log_message(f"####### INICIO DE PROCESAMIENTO SEGMENTADO ###########", LOG_FILE_PATH)
     log_message(f"Log de salida en: {LOG_FILE_PATH}", LOG_FILE_PATH)
-    log_message(f"Iniciando el procesamiento de {len(SCRIPTS_TO_RUN)} scripts...", LOG_FILE_PATH)
+    log_message(f"Segmento a ejecutar: {SEGMENTO_A_EJECUTAR} ({len(SCRIPTS_TO_RUN)} scripts)", LOG_FILE_PATH)
     log_message(f"Python Executable: {PYTHON_EXECUTABLE}", LOG_FILE_PATH)
     log_message(f"########################################################\n", LOG_FILE_PATH)
     
@@ -157,14 +196,11 @@ if __name__ == '__main__':
         
         if not exito:
             scripts_fallidos.append(script_file)
-            
-            # Puedes agregar aquí una lógica para detener todo el proceso 
-            # si un script es CRÍTICO y falla (ej: break)
-            # break 
+            # break # Descomentar para detener la ejecución inmediatamente después de un fallo.
     
     # 3. Resumen Final
     log_message("\n========================================================", LOG_FILE_PATH)
-    log_message("               RESUMEN DE PROCESAMIENTO                 ", LOG_FILE_PATH)
+    log_message("               RESUMEN DE PROCESAMIENTO                 ", LOG_FILE_PATH)
     log_message("========================================================", LOG_FILE_PATH)
     
     if not scripts_fallidos:
